@@ -1,0 +1,38 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="LatexMissingImport" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="numberOfIndexedUsePackages" value="8" />
+    </inspection_tool>
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="ERROR" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="3">
+            <item index="0" class="java.lang.String" itemvalue="hpbandster" />
+            <item index="1" class="java.lang.String" itemvalue="scipy" />
+            <item index="2" class="java.lang.String" itemvalue="pygmo" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="E731" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="numpy" />
+          <option value="scripts.visualization.q_learning" />
+          <option value="scripts.visualization.cliff_walking" />
+          <option value="q_learning" />
+          <option value="src.NASBench_example.nas_cifar10" />
+          <option value="src.AutoML.cnn" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
