@@ -19,7 +19,6 @@ git clone --recurse-submodules https://github.com/D-X-Y/AutoDL-Projects.git XAut
 cd XAutoDL
 python XAutoDL/setup.py install
 
-cd ..
 git clone https://github.com/automl/multi-obj-baselines.git
 
 
