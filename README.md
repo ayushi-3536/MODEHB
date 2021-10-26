@@ -1,5 +1,3 @@
-# AutoML lecture 2021 (Freiburg & Hannover)
-## Final Project
 
 This repository uses DEHB optimizer which is extended by NSGA-II to optimize model_size, precision and accuracy.
 Implementation for DEHB is open-source and is explained in the following research paper:https://arxiv.org/abs/2105.09821
