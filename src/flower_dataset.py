@@ -1,5 +1,5 @@
-from dependencies.multiobjbaselines.baselines.problems import get_flowers
-from dependencies.multiobjbaselines.baselines.problems.flowers import FlowersSearchSpace
+#from problems import get_flowers
+from problems.flowers import FlowersSearchSpace
 import DEHB.dehb.optimizers.modehb as mo
 import sys
 import argparse
@@ -7,7 +7,7 @@ from loguru import logger
 import os
 import time
 import json
-from dependencies.multiobjbaselines.baselines.problems.flowers.flowernet import evaluate_network
+from problems.flowers.flowernet import evaluate_network
 
 logger.configure(handlers=[{"sink": sys.stdout, "level": "INFO"}])
 _logger_props = {
@@ -42,8 +42,6 @@ def input_arguments():
                         help='choose the dataset')
     parser.add_argument('--max_nodes', default=4, type=int, nargs='?',
                         help='maximum number of nodes in the cell')
-    parser.add_argument('--iter', default=100, type=int, nargs='?',
-                        help='number of DEHB iterations')
     parser.add_argument('--gens', default=1, type=int, nargs='?',
                         help='number of generations for DE to evolve')
     parser.add_argument('--output_path', default="/content/drive/MyDrive/run/changedk/30_runtime/", type=str, nargs='?',
@@ -61,9 +59,9 @@ def input_arguments():
                         help='probability of crossover')
     parser.add_argument('--boundary_fix_type', default='random', type=str, nargs='?',
                         help="strategy to handle solutions outside range {'random', 'clip'}")
-    parser.add_argument('--min_budget', default=11, type=int, nargs='?',
+    parser.add_argument('--min_budget', default=5, type=int, nargs='?',
                         help='minimum budget')
-    parser.add_argument('--max_budget', default=199, type=int, nargs='?',
+    parser.add_argument('--max_budget', default=25, type=int, nargs='?',
                         help='maximum budget')
     parser.add_argument('--eta', default=3, type=int, nargs='?',
                         help='hyperband eta')
@@ -71,21 +69,13 @@ def input_arguments():
                         help='to print progress or not')
     parser.add_argument('--folder', default=None, type=str, nargs='?',
                         help='name of folder where files will be dumped')
-    parser.add_argument('--nas_bench_file', default='..//NATS-tss-v1_0-3ffb9-simple', type=str, nargs='?',
-                        help='location of nas benchmark file')
     parser.add_argument('--version', default=None, type=str, nargs='?',
                         help='DEHB version to run')
     parser.add_argument('--n_workers', type=int, default=1,
                         help='Number of CPU workers for DEHB to distribute function evaluations to')
+    parser.add_argument('--runtime', type=int, default=400,
+                        help='total runtime')
 
-    parser.add_argument('-s', "--constraint_max_model_size",
-                        default=2e7,
-                        help="maximal model size constraint",
-                        type=int)
-    parser.add_argument('-p', "--constraint_min_precision",
-                        default=0.42,
-                        help='minimal constraint constraint',
-                        type=float)
     parser.add_argument('--seed', type=int, default=1, metavar='S',
                         help='random seed (default: 123)')
 
@@ -103,26 +93,26 @@ output_path = create_output_dir(args)
 output_path = args.output_path + "_" + str(args.run_id) + '/'
 os.makedirs(output_path, exist_ok=True)
 
-dimensions = len(FlowersSearchSpace.get_hyperparameters())
+dimensions = len(FlowersSearchSpace().get_hyperparameters())
 
 def objective_function(cfg, seed, budget, run=1, **kwargs):
     start = time.time()
     metrics = evaluate_network(cfg,budget=budget)
     acc = metrics['val_acc_1']
-    total_model_params = metrics['n_params']
-    logger.info("budget:{}",budget)
+    total_model_params = metrics['num_params']
+    logger.info("budget:{}, numparams:{}, acc:{}",budget,total_model_params,acc)
     with open(output_path + 'dehb_run.json', 'a+')as f:
-        json.dump({'configuration': dict(cfg), 'error': acc, 'top3': 1 - acc,
+        json.dump({'configuration': dict(cfg), 'acc': acc,
                    'n_params': total_model_params, 'num_epochs': budget}, f)
 
         f.write("\n")
 
     return ({"cost": time.time()-start,
-             "fitness": [total_model_params, acc]})  # Because minimize!
+             "fitness": [acc,total_model_params]})  # Because minimize!
 
 
 modehb = mo.MODEHB(f=objective_function,
-                   cs=FlowersSearchSpace,
+                   cs=FlowersSearchSpace(),
                    dimensions=dimensions,
                    min_budget=args.min_budget,
                    max_budget=args.max_budget,
@@ -132,4 +122,5 @@ modehb = mo.MODEHB(f=objective_function,
                    # if client is None, a Dask client with n_workers is set up
                    n_workers=args.n_workers,
                    seed=args.seed,
-                   ref_point=[1, 1])
+                   ref_point=[1, 8])
+modehb.run(total_cost=args.runtime)
