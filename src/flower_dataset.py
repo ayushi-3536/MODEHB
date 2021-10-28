@@ -1,13 +1,13 @@
 #from problems import get_flowers
-from problems.flowers import FlowersSearchSpace
-import DEHB.dehb.optimizers.modehb as mo
+from .problems.flowers import FlowersSearchSpace
+from .DEHB.dehb.optimizers import MODEHB
 import sys
 import argparse
 from loguru import logger
 import os
 import time
 import json
-from problems.flowers.flowernet import evaluate_network
+from .problems.flowers.flowernet import evaluate_network
 
 logger.configure(handlers=[{"sink": sys.stdout, "level": "INFO"}])
 _logger_props = {
@@ -111,7 +111,7 @@ def objective_function(cfg, seed, budget, run=1, **kwargs):
              "fitness": [acc,total_model_params]})  # Because minimize!
 
 
-modehb = mo.MODEHB(f=objective_function,
+modehb = MODEHB(objective_function=objective_function,
                    cs=FlowersSearchSpace(),
                    dimensions=dimensions,
                    min_budget=args.min_budget,

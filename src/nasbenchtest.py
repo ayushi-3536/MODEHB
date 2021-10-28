@@ -207,7 +207,7 @@ def nas_query_function(cfg, seed=1, budget=200, run=1, **kwargs):
 # Initializing DEHB object
 
 def call_optimizer(args, cs, output_path, dimensions):
-    modehb = mo.MODEHB(f=nas_query_function,
+    modehb = mo.MODEHB(objective_function=nas_query_function,
                        cs=cs,
                        dimensions=dimensions,
                        min_budget=args.min_budget,

@@ -135,6 +135,9 @@ def evaluate_network(config, budget=None):
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
     path = lambda x: str(pathlib.Path(__file__).parent.absolute().joinpath('data').joinpath(x))
 
     # Read train datasets
@@ -192,11 +195,11 @@ def evaluate_network(config, budget=None):
     t.close()
 
     return {
-        'val_acc_1': (-100.0 * val_acc1, 0.0),
-        'val_acc_3': (-100.0 * val_acc3, 0.0),
-        'tst_acc_1': (-100.0 * tst_acc1, 0.0),
-        'tst_acc_3': (-100.0 * tst_acc3, 0.0),
-        'num_params': (np.log10(num_params), 0.0),        
+        'val_acc_1': -100.0 * val_acc1,
+        'val_acc_3': -100.0 * val_acc3,
+        'tst_acc_1': -100.0 * tst_acc1,
+        'tst_acc_3': -100.0 * tst_acc3,
+        'num_params': np.log10(num_params)
     }
 
 

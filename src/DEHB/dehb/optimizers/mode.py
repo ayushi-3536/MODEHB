@@ -64,28 +64,24 @@ class MoAsyncDE(MODE):
         assert "cost" in res
         return res
 
-    # def init_population(self, pop_size: int, warm_start=False, constraints=None) -> List:
-    #
-    #     np.random.seed(self.seed)
-    #     self.cs.seed(self.seed)
-    #     if self.configspace:
-    #         # sample from ConfigSpace s.t. conditional constraints (if any) are maintained
-    #             configs, costs = bohb_optimization(self.cs, self.seed, pop_size, self.output_path, constraints)
-    #             population = configs[:pop_size]
-    #             self.fallback_population = configs[-(len(configs)-pop_size):]
-    #             logger.debug("population size:{}, pop size:{}", len(population), pop_size)
-    #             logger.debug("fallback pop :{}", len(self.fallback_population))
-    #
-    #             # logger.debug("population:{}",population)
-    #             if not isinstance(population, List):
-    #                 population = [population]
-    #         # the population is maintained in a list-of-vector form where each ConfigSpace
-    #         # configuration is scaled to a unit hypercube, i.e., all dimensions scaled to [0,1]
-    #             population = [self.configspace_to_vector(individual) for individual in population]
-    #     else:
-    #         # if no ConfigSpace representation available, uniformly sample from [0, 1]
-    #         population = np.random.uniform(low=0.0, high=1.0, size=(pop_size, self.dimensions))
-    #     return np.array(population)
+    def init_population(self, pop_size: int, warm_start=False, constraints=None) -> List:
+
+        np.random.seed(self.seed)
+        self.cs.seed(self.seed)
+        if self.configspace:
+            # sample from ConfigSpace s.t. conditional constraints (if any) are maintained
+
+            population = self.cs.sample_configuration(size=pop_size)
+            # logger.debug("population:{}",population)
+            if not isinstance(population, List):
+                    population = [population]
+            # the population is maintained in a list-of-vector form where each ConfigSpace
+            # configuration is scaled to a unit hypercube, i.e., all dimensions scaled to [0,1]
+            population = [self.configspace_to_vector(individual) for individual in population]
+        else:
+            # if no ConfigSpace representation available, uniformly sample from [0, 1]
+            population = np.random.uniform(low=0.0, high=1.0, size=(pop_size, self.dimensions))
+        return np.array(population)
 
 
     def _set_min_pop_size(self):

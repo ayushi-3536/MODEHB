@@ -87,6 +87,7 @@ class DEBase():
     def init_population(self, pop_size: int) -> List:
         if self.configspace:
             # sample from ConfigSpace s.t. conditional constraints (if any) are maintained
+
             population = self.cs.sample_configuration(size=pop_size)
             if not isinstance(population, List):
                 population = [population]

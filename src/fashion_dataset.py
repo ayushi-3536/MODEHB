@@ -121,7 +121,7 @@ def objective_function(cfg, seed, budget, run=1, **kwargs):
              "fitness": [total_model_params, acc]})  # Because minimize!
 
 
-modehb = mo.MODEHB(f=objective_function,
+modehb = mo.MODEHB(objective_function=objective_function,
                    cs=FashionSearchSpace,
                    dimensions=dimensions,
                    min_budget=args.min_budget,

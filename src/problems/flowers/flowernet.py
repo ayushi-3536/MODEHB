@@ -16,6 +16,7 @@ class FlowerNet(nn.Module):
     """
     The model to optimize
     """
+
     def __init__(self, config, input_shape=(3, 28, 28), num_classes=10):
         super(FlowerNet, self).__init__()
 
@@ -36,7 +37,7 @@ class FlowerNet(nn.Module):
             layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
 
             inp_ch = out_ch
-        
+
         self.conv_layers = nn.Sequential(*layers)
         self.pooling = nn.AdaptiveAvgPool2d(1) if config['global_avg_pooling'] else nn.Identity()
         self.output_size = num_classes
@@ -44,7 +45,7 @@ class FlowerNet(nn.Module):
         self.fc_layers = nn.ModuleList()
 
         inp_n = self._get_conv_output(input_shape)
-        
+
         layers = [nn.Flatten()]
         for i in range(config['n_fc_l']):
             out_n = config['n_fc_{}'.format(i)]
@@ -53,7 +54,7 @@ class FlowerNet(nn.Module):
             layers.append(nn.ReLU(inplace=False))
 
             inp_n = out_n
-        
+
         layers.append(nn.Linear(inp_n, num_classes))
         self.fc_layers = nn.Sequential(*layers)
 
@@ -127,11 +128,11 @@ class FlowerNet(nn.Module):
 
 
 def evaluate_network(config, budget=None):
-
     budget = budget if budget else config['budget']
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     path = lambda x: str(pathlib.Path(__file__).parent.absolute().joinpath('data').joinpath(x))
 
     # Read train datasets
@@ -152,9 +153,8 @@ def evaluate_network(config, budget=None):
     # Read Test datasets
     x_test = torch.tensor(np.load(path('x_test.npy'))).float()
     x_test = x_test.permute(0, 3, 1, 2)
-    
-    y_test = torch.tensor(np.load(path('y_test.npy'))).long()
 
+    y_test = torch.tensor(np.load(path('y_test.npy'))).long()
 
     ds_val = torch.utils.data.TensorDataset(x_val, y_val)
     ds_val = torch.utils.data.DataLoader(ds_val, batch_size=config['batch_size'], shuffle=True)
@@ -188,19 +188,19 @@ def evaluate_network(config, budget=None):
     t.close()
 
     return {
-        'val_acc_1': (-100.0 * val_acc1, 0.0),
-        'val_acc_3': (-100.0 * val_acc3, 0.0),
-        'tst_acc_1': (-100.0 * tst_acc1, 0.0),
-        'tst_acc_3': (-100.0 * tst_acc3, 0.0),
-        'num_params': (np.log10(num_params), 0.0),        
+        'val_acc_1': -100.0 * val_acc1,
+        'val_acc_3': -100.0 * val_acc3,
+        'tst_acc_1': -100.0 * tst_acc1,
+        'tst_acc_3': -100.0 * tst_acc3,
+        'num_params': np.log10(num_params)
     }
-
 
 
 def extract_num_parameters(config):
     total = 0
 
-    s = (config['kernel_size'] * config['kernel_size'] * 3 + 1) * config['n_conv_0'] + config['batch_norm'] * config['n_conv_0'] * 2
+    s = (config['kernel_size'] * config['kernel_size'] * 3 + 1) * config['n_conv_0'] + config['batch_norm'] * config[
+        'n_conv_0'] * 2
     total += s
     s = ((config['kernel_size'] * config['kernel_size'] * config['n_conv_0'] + 1) * config[
         'n_conv_1']) + config['batch_norm'] * config['n_conv_1'] * 2 if config['n_conv_l'] > 1 else 0

@@ -19,12 +19,25 @@ _logger_props = {
 
 
 class MODEHB(DEHB):
-    def __init__(self, output_path, cs=None, f=None, dimensions=None, mutation_factor=0.5,
-                 crossover_prob=0.5, strategy='rand1_bin', min_budget=None,
-                 max_budget=None, eta=3,
-                 min_clip=None, max_clip=None, configspace=True,
-                 boundary_fix_type='random', max_age=np.inf, n_workers=None, seed=1,**kwargs):
-        super().__init__(cs=cs, f=f, dimensions=dimensions, mutation_factor=mutation_factor,
+    def __init__(self, output_path,
+                 cs=None,
+                 objective_function=None,
+                 dimensions=None,
+                 mutation_factor=0.5,
+                 crossover_prob=0.5,
+                 strategy='rand1_bin',
+                 min_budget=None,
+                 max_budget=None,
+                 eta=3,
+                 min_clip=None,
+                 max_clip=None,
+                 configspace=True,
+                 boundary_fix_type='random',
+                 max_age=np.inf,
+                 n_workers=None,
+                 seed=1,
+                 **kwargs):
+        super().__init__(cs=cs, f=objective_function, dimensions=dimensions, mutation_factor=mutation_factor,
                          crossover_prob=crossover_prob, strategy=strategy, min_budget=min_budget,
                          max_budget=max_budget, eta=eta, min_clip=min_clip, max_clip=max_clip,
                          configspace=configspace, boundary_fix_type=boundary_fix_type, n_workers=n_workers,
@@ -41,13 +54,14 @@ class MODEHB(DEHB):
             "max_age": self.max_age,
             "cs": self.cs,
             "dimensions": self.dimensions,
-            "f": f
+            "f": objective_function
         }
         self.seed = seed
         self.output_path = output_path
         self.count_eval = 0
         self._init_subpop(seed)
         self.ref_point = kwargs['ref_point']
+        self.log_interval = kwargs['log_interval'] if kwargs['log_interval'] else 100
 
     def _init_subpop(self, seed):
         """ List of DE objects corresponding to the budgets (fidelities)
@@ -59,7 +73,7 @@ class MODEHB(DEHB):
                                    output_path=self.output_path, seed=seed + i)
             self.de[b].population = self.de[b].init_population(pop_size=self._max_pop_size[b])
             self.de[b].fitness = np.array([[np.inf, np.inf]] * self._max_pop_size[b])
-            logger.debug("init pop size:{}, pop obtaines:{}", self._max_pop_size[b], self.de[b].population)
+            logger.debug("init pop size:{}, pop obtained:{}", self._max_pop_size[b], self.de[b].population)
 
             # adding attributes to DEHB objects to allow communication across subpopulations
             self.de[b].parent_counter = 0
@@ -123,10 +137,10 @@ class MODEHB(DEHB):
         logger.debug("pareto fit:{}", self.pareto_fit)
         # dump pareto every 10th evaluation
 
-        if (self.count_eval % 1 == 0):
+        if (self.count_eval % self.log_interval == 0):
             with open(os.path.join(self.output_path, "pareto_fit_{}.txt".format(time.time())), 'w') as f:
                 np.savetxt(f, self.pareto_fit)
-        if (self.count_eval % 1 == 0):
+        if (self.count_eval % self.log_interval == 0):
             with open(os.path.join(self.output_path, "pareto_pop_{}.txt".format(time.time())), 'w') as f:
               for item in self.pareto_configs:
                 f.write(str(item))
@@ -299,6 +313,20 @@ class MODEHB(DEHB):
         self.runtime.append(runtime)
         self.history.append(history)
 
+    def save_results(self):
+        with open(os.path.join(self.output_path, "pareto_fit_{}.txt".format(time.time())), 'w') as f:
+                np.savetxt(f, self.pareto_fit)
+        with open(os.path.join(self.output_path, "pareto_pop_{}.txt".format(time.time())), 'w') as f:
+              for item in self.pareto_configs:
+                f.write(str(item))
+        if self.history is not None:
+                logger.debug("history {}", self.history)
+                costs = np.array([[x[1][0], x[1][1]] for x in self.history])
+                file_name = open(self.output_path + 'every_run_cost_%s.txt' % time.time(), 'w')
+                # for line in costs:
+                np.savetxt(file_name, costs)
+                file_name.close()
+
     def _fetch_results_from_workers(self):
         """ Iterate over futures and collect results from finished workers
         """
@@ -351,17 +379,17 @@ class MODEHB(DEHB):
                 # for line in costs:
                 np.savetxt(file_name, costs)
                 file_name.close()
-            self._save_incumbent(fitness, config)
+            self._update_pareto(fitness, config)
             # book-keeping
             self._update_trackers(
                 runtime=cost,
                 history=(config.tolist(), fitness, float(cost), float(budget), info)
             )
-            logger.info("ref point:{}",self.ref_point)
+            logger.debug("ref point:{}",self.ref_point)
             with open(os.path.join(self.output_path, "hv_contribution.txt"), 'a') as f:
-                logger.info("paeto fit:{}",self.pareto_fit)
+                logger.debug("paeto fit:{}",self.pareto_fit)
                 ra = [[self.runtime[-1],pareto.contributionHV(self.pareto_fit,self.ref_point)]]
-                logger.info("pareto:{}",pareto.contributionHV(self.pareto_fit,self.ref_point))
+                logger.debug("pareto:{}",pareto.contributionHV(self.pareto_fit,self.ref_point))
                 np.savetxt(f,ra)
 
         # remove processed future
@@ -452,16 +480,6 @@ class MODEHB(DEHB):
             if save_history and self.history is not None:
                 self._save_history()
             time.sleep(0.05)  # waiting 50ms
-        with open(os.path.join(self.output_path, "pareto_fit_{}.txt".format(time.time())), 'w') as f:
-                np.savetxt(f, self.pareto_fit)
-        with open(os.path.join(self.output_path, "pareto_pop_{}.txt".format(time.time())), 'w') as f:
-              for item in self.pareto_configs:
-                f.write(str(item))
-        if self.history is not None:
-                logger.debug("history {}", self.history)
-                costs = np.array([[x[1][0], x[1][1]] for x in self.history])
-                file_name = open(self.output_path + 'every_run_cost_%s.txt' % time.time(), 'w')
-                # for line in costs:
-                np.savetxt(file_name, costs)
-                file_name.close()
+        self.save_results()
+
         return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
