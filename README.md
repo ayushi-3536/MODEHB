@@ -79,7 +79,7 @@ These files will be generated in output_dir provided by cmd line argument or in 
     * [pareto.py](src/pareto_utils/pareto.py) <BR>
       this contains all the pareto specific function such as NDS sorting, crowding distance calculation and identifying pareto
    
-    * [utils.py](src/utils.py)<BR>
+    * [utils.py](src/examples/metric_utils.py)<BR>
       contains simple helper functions for cnn.py
       
 ##Installation guide

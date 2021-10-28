@@ -72,6 +72,7 @@ class MODEHB(DEHB):
             self.de[b] = MoAsyncDE(**self.de_params, budget=b, pop_size=self._max_pop_size[b],
                                    output_path=self.output_path, seed=seed + i)
             self.de[b].population = self.de[b].init_population(pop_size=self._max_pop_size[b])
+            #To-Do:make it extensible to multiple objectives
             self.de[b].fitness = np.array([[np.inf, np.inf]] * self._max_pop_size[b])
             logger.debug("init pop size:{}, pop obtained:{}", self._max_pop_size[b], self.de[b].population)
 
@@ -109,14 +110,12 @@ class MODEHB(DEHB):
             pop.extend(self.de[budget].population.tolist())
         return pop
 
-    def _update_pareto(self, fitness, config, exclude_budget=None):
+    def _update_pareto(self, fitness, config):
         """ Concatenates all subpopulations
         """
         name = time.strftime("%x %X %Z", time.localtime(self.start))
-        name = name.replace("/", '-').replace(":", '-').replace(" ", '_')
         budgets = list(self.budgets)
-        if exclude_budget is not None:
-            budgets.remove(exclude_budget)
+        #Todo: maintain pop and fitness together in a class
         pop = self.pareto_pop
         fit = self.pareto_fit
         pop.append(config)
@@ -247,6 +246,7 @@ class MODEHB(DEHB):
                 # This is done to promote diversity in the population to tradeoff exploitation with exploration by not directly selecting the best
                 #best candidates but sample from few top candidates, this should vary if population increases and can be one of the factors
                 # that can be tuned like mutation or recombination factors
+                ##Todo: discuss what to do here, sampling doesn't make any sense here anymore as we are fixing k to filler
                 k = filler ;+ 1
                 top_pareto_configs = self.best_pareto_config[:k]
                 pop_idx = np.random.choice(np.arange(len(top_pareto_configs)), filler, replace=False)

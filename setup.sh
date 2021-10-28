@@ -15,6 +15,7 @@ fi
 
 cd dependencies
 
+#To Test NASBenchmark-201
 git clone --recurse-submodules https://github.com/D-X-Y/AutoDL-Projects.git XAutoDL
 cd XAutoDL
 python XAutoDL/setup.py install
