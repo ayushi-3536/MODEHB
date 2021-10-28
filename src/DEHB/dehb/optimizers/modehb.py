@@ -5,7 +5,7 @@ import time
 import numpy as np
 from loguru import logger
 from distributed import Client
-from pareto_utils import pareto
+from ..utils import pareto
 from .mode import MoAsyncDE
 from ..optimizers import DEHB
 import random
