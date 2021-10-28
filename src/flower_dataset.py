@@ -97,7 +97,7 @@ dimensions = len(FlowersSearchSpace().get_hyperparameters())
 
 def objective_function(cfg, seed, budget, run=1, **kwargs):
     start = time.time()
-    metrics = evaluate_network(cfg,budget=budget)
+    metrics = evaluate_network(cfg,budget=int(budget))
     acc = metrics['val_acc_1']
     total_model_params = metrics['num_params']
     logger.info("budget:{}, numparams:{}, acc:{}",budget,total_model_params,acc)
