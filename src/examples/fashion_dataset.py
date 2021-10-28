@@ -1,12 +1,11 @@
-from dependencies.multiobjbaselines.baselines.problems import get_fashion
-from dependencies.multiobjbaselines.baselines.problems.fashion import FashionSearchSpace
+from .problems.fashion import FashionSearchSpace
 import DEHB.dehb.optimizers.modehb as mo
 import sys
 from loguru import logger
 import time
 import json
 from .default_utils import *
-from dependencies.multiobjbaselines.baselines.problems.flowers.flowernet import evaluate_network
+from .problems.flowers.flowernet import evaluate_network
 
 logger.configure(handlers=[{"sink": sys.stdout, "level": "INFO"}])
 _logger_props = {

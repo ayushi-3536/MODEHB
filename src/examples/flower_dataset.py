@@ -1,11 +1,11 @@
-from examples.problems.flowers import FlowersSearchSpace
+from .problems.flowers import FlowersSearchSpace
 from DEHB.dehb.optimizers import MODEHB
 import sys
 from loguru import logger
 import time
 from .default_utils import *
 import json
-from examples.problems.flowers import evaluate_network
+from .problems.flowers import evaluate_network
 
 logger.configure(handlers=[{"sink": sys.stdout, "level": "DEBUG"}])
 _logger_props = {
