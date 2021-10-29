@@ -1,4 +1,5 @@
 from .problems.fashion import FashionSearchSpace
+
 import DEHB.dehb.optimizers.modehb as mo
 import sys
 from loguru import logger

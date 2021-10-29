@@ -63,5 +63,5 @@ def default_arguments():
     parser.add_argument('--seed', type=int, default=1, metavar='S',
                         help='random seed (default: 123)')
 
-    args = parser.parse_args()
-    return args
+
+    return parser
