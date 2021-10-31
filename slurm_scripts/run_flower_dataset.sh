@@ -3,7 +3,7 @@
 #SBATCH --mem 4000 # memory pool for all cores (4GB)
 #SBATCH -t 0-24:00:00 # time (D-HH:MM)
 #SBATCH -c 1 # number of cores
-#SBATCH -a 10 # array size
+#SBATCH -a 1-10 # array size
 #SBATCH --gres=gpu:1  # reserves one GPU
 #SBATCH -D /work/dlclarge1/sharmaa-modehb # Change working_dir
 #SBATCH -o /work/dlclarge1/sharmaa-modehb/logs/flower_exp.%A.out # STDOUT  (the folder log has to exist) %A will be replaced by the SLURM_ARRAY_JOB_ID value, whilst %a will be replaced by the SLURM_ARRAY_TASK_ID
@@ -19,33 +19,43 @@ pip install -r requirements.txt
 python3 -c "import torch; print(torch.__version__)"
 python3 -c "import torch; print(torch.cuda.is_available())"
 
-echo "starting run 1"
-python3 -m src.examples.flower_dataset --name Flower_Run1 --runtime 86400 --run_id 3 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 3
-
-echo "starting run 2"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 4 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 4
-
-echo "starting run 3"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 5 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 5
-
-echo "starting run 4"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 6 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 6
-
-echo "starting run 5"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 7 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 7
-
-echo "starting run 6"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 8 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 8
-
-echo "starting run 7"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 9 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 9
-
-echo "starting run 8"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 10 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 10
-
-echo "starting run 9"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 11 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 11
-
-echo "starting run 10"
-python3 -m src.examples.flower_dataset --runtime 86400 --run_id 12 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 12
-              
+if [ 1 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 3 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 3
+              exit $?
+fi
+if [ 2 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 4 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 4
+              exit $?
+fi
+if [ 3 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 5 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 5
+              exit $?
+fi
+if [ 4 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 6 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 6
+              exit $?
+fi
+if [ 5 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 7 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 7
+              exit $?
+fi
+if [ 6 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 8 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 8
+              exit $?
+fi
+if [ 7 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 9 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 9
+              exit $?
+fi
+if [ 8 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 10 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 10
+              exit $?
+fi
+if [ 9 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 11 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 11
+              exit $?
+fi
+if [ 10 -eq $SLURM_ARRAY_TASK_ID ]; then
+           mkdir -p ./example/job-$SLURM_ARRAY_TASK_ID &&  python3 -m src.examples.flower_dataset --runtime 86400 --run_id 12 --output_path '/work/dlclarge1/sharmaa-modehb/logs' --seed 12
+              exit $?
+fi
