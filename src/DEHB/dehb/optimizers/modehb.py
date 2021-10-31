@@ -381,8 +381,12 @@ class MODEHB(DEHB):
                 file_name.close()
             self._update_pareto(fitness, config)
             # book-keeping
+            if(self.count_eval>1):
+                runtime = self.runtime[-1]+cost
+            else:
+                runtime=cost
             self._update_trackers(
-                runtime=cost,
+                runtime=runtime,
                 history=(config.tolist(), fitness, float(cost), float(budget), info)
             )
             logger.debug("ref point:{}",self.ref_point)
