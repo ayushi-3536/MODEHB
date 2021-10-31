@@ -42,37 +42,18 @@ def plot_3D_pareto(path):
     ax.view_init(45, -35)
     plt.show()
 
-def plot_all_runs(path):
+def plot_all_runs(cost,pareto,all_runs_title):
+    cost = np.loadtxt(cost)
 
-    cost = np.loadtxt(path)
-    cost1 = cost.copy()
-    plt.scatter(cost[:, 0], cost[:, 2], color='blue', marker='o', alpha=0.5)
-    cost = cost[cost[:, 0] <= 2e7]
-    cost = cost[cost[:, 1] <= -0.39]
-    cost = cost[cost[:, 2] < 0.2]
-    plt.scatter(cost[:, 0], cost[:, 2], color='red', marker='o', alpha=0.5)
-    # pareto_front1= cost[front, :]
-    # plt.scatter(pareto[:, 0], pareto[:, 2],color='red', marker='o')
-    plt.axvline(x=2e7, color='r', linestyle='-')
-    plt.axhline(y=0.25, color='r', linestyle='-')
-    plt.title('Sampled Configuration')
-    plt.xlabel('model_size')
-    plt.ylabel('error')
+    p1 = np.loadtxt(pareto)
 
-    plt.xscale('log')
-    plt.show()
+    plt.scatter(cost[:, 0], cost[:, 1], color='green', marker='o', label="sampled_config")
+    plt.scatter(p1[:, 0], p1[:, 1], color='blue', marker='o', label="pareto")
 
-    plt.scatter(cost1[:, 1], cost1[:, 2], color='blue', marker='o', alpha=0.5)
-    plt.scatter(cost[:, 1], cost[:, 2], color='red', marker='o', alpha=0.5)
-    # pareto_front1= cost[front, :]
-    # plt.scatter(pareto1[:, 1], pareto_front1[:, 2],color='red', marker='o')
-    plt.axvline(x=-0.39, color='r', linestyle='-')
-    plt.axhline(y=0.25, color='r', linestyle='-')
-    plt.title('sampled configuration')
-    plt.xlabel('precision')
-    plt.ylabel('error')
-
-    # plt.xscale('log')
+    plt.title(all_runs_title)
+    plt.xlabel('validation-acc')
+    plt.ylabel('model_param')
+    plt.legend(loc="upper right")
     plt.show()
 
 def plot_parallel_coordinates(path):
@@ -102,13 +83,16 @@ def input_arguments():
                         help='file that has all the points fitness')
     parser.add_argument('--all_configs', type=str, default="..//dehb_run.json",
                         help='file that has all the points')
+    parser.add_argument('--all_runs_title', type=str, default="algo: MODEHB, benchmark: Flower dataset, runtime: 24h",
+                        help='file that has all the points')
     args = parser.parse_args()
     return args
 
 
 if __name__ == '__main__':
     args = input_arguments()
-    plot_3D_pareto(args.pareto_path)
-    plot_all_runs(args.all_fitness)
-    plot_parallel_coordinates(args.all_configs)
+
+    #plot_3D_pareto(args.pareto_path)
+    plot_all_runs(args.all_fitness,args.pareto_path,args.all_runs_title)
+    #plot_parallel_coordinates(args.all_configs)
 
