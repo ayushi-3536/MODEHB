@@ -1,5 +1,5 @@
 from .problems.flowers import FlowersSearchSpace
-from DEHB.dehb.optimizers import MODEHB
+from ..DEHB.dehb.optimizers import MODEHB
 import sys
 from loguru import logger
 import time
