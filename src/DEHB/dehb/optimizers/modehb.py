@@ -375,7 +375,7 @@ class MODEHB(DEHB):
             if self.history is not None and self.count_eval % 10000 == 0:
                 logger.debug("history {}", self.history)
                 costs = np.array([[x[1][0], x[1][1]] for x in self.history])
-                file_name = open(self.output_path + 'every_run_cost_%s.txt' % time.time(), 'w')
+                file_name = open(os.path.join(self.output_path + 'every_run_cost_%s.txt' % time.time()), 'w')
                 # for line in costs:
                 np.savetxt(file_name, costs)
                 file_name.close()
