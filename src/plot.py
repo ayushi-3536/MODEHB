@@ -6,7 +6,7 @@ import json
 import pandas as pd
 import numpy as np
 from IPython.display import display
-def pareto(costs: np.ndarray):
+def pareto(costs):
     """
     Find the pareto-optimal points
     :param costs: (n_points, m_cost_values) array
