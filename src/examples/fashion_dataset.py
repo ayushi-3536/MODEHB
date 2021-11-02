@@ -19,6 +19,8 @@ _logger_props = {
 def input_arguments():
     parser = default_arguments()
     #add experiment specific arguments here
+    parser.add_argument('--output_path', default="./fashion_logs", type=str, nargs='?',
+                        help='specifies the path where the results will be saved')
     args = parser.parse_args()
     return args
 
@@ -58,4 +60,4 @@ modehb = mo.MODEHB(objective_function=objective_function,
                    # if client is None, a Dask client with n_workers is set up
                    n_workers=args.n_workers,
                    seed=args.seed,
-                   ref_point=[1, 1])
+                   ref_point=[0, 8])
