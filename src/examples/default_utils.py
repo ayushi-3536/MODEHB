@@ -27,7 +27,7 @@ def default_arguments():
                         help='maximum number of nodes in the cell')
     parser.add_argument('--gens', default=1, type=int, nargs='?',
                         help='number of generations for DE to evolve')
-    parser.add_argument('--output_path', default="./logs", type=str, nargs='?',
+    parser.add_argument('--output_path', default="./fashion_logs", type=str, nargs='?',
                         help='specifies the path where the results will be saved')
     strategy_choices = ['rand1_bin', 'rand2_bin', 'rand2dir_bin', 'best1_bin', 'best2_bin',
                         'currenttobest1_bin', 'randtobest1_bin',

@@ -1,12 +1,11 @@
 from .problems.fashion import FashionSearchSpace
-
-import DEHB.dehb.optimizers.modehb as mo
+from ..DEHB.dehb.optimizers import MODEHB
 import sys
 from loguru import logger
 import time
 import json
 from .default_utils import *
-from .problems.flowers.flowernet import evaluate_network
+from .problems.fashion.fashionnet import evaluate_network
 
 logger.configure(handlers=[{"sink": sys.stdout, "level": "INFO"}])
 _logger_props = {
@@ -19,8 +18,8 @@ _logger_props = {
 def input_arguments():
     parser = default_arguments()
     #add experiment specific arguments here
-    parser.add_argument('--output_path', default="./fashion_logs", type=str, nargs='?',
-                        help='specifies the path where the results will be saved')
+    # parser.add_argument('--output_path', default="./fashion_logs", type=str, nargs='?',
+    #                     help='specifies the path where the results will be saved')
     args = parser.parse_args()
     return args
 
@@ -49,7 +48,7 @@ output_path = create_output_dir(args)
 output_path = args.output_path + "_" + str(args.run_id) + '/'
 os.makedirs(output_path, exist_ok=True)
 cs = FashionSearchSpace()
-modehb = mo.MODEHB(objective_function=objective_function,
+modehb = MODEHB(objective_function=objective_function,
                    cs=cs,
                    dimensions=len(cs.get_hyperparameters()),
                    min_budget=args.min_budget,

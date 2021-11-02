@@ -59,5 +59,5 @@ modehb = MODEHB(objective_function=objective_function,
                    n_workers=args.n_workers,
                    seed=args.seed,
                    log_interval = args.log_interval,
-                   ref_point=[1, 8])
+                   ref_point=[0, 8])
 modehb.run(total_cost=args.runtime)
