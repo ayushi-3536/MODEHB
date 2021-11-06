@@ -61,7 +61,7 @@ class MODEHB(DEHB):
         self.count_eval = 0
         self._init_subpop(seed)
         self.ref_point = kwargs['ref_point']
-        self.log_interval = kwargs['log_interval'] if kwargs['log_interval'] else 100
+        self.log_interval = 100
 
     def _init_subpop(self, seed):
         """ List of DE objects corresponding to the budgets (fidelities)

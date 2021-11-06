@@ -29,11 +29,11 @@ def objective_function(cfg, seed, budget, run=1, **kwargs):
     metrics = evaluate_network(cfg,budget=int(budget))
     acc = metrics['val_acc_1']
     cost = time.time()-start
-    total_model_params = metrics['n_params']
+    total_model_params = metrics['num_params']
     logger.info("budget:{}",budget)
     with open(output_path + 'dehb_run.json', 'a+')as f:
-        json.dump({'configuration': dict(cfg), 'error': acc, 'top3': 1 - acc,
-                   'n_params': total_model_params, 'num_epochs': budget,'cost':cost}, f)
+        json.dump({'configuration': dict(cfg), 'acc': acc,
+                   'num_params': total_model_params, 'num_epochs': budget,'cost':cost}, f)
 
         f.write("\n")
 
@@ -59,4 +59,5 @@ modehb = MODEHB(objective_function=objective_function,
                    # if client is None, a Dask client with n_workers is set up
                    n_workers=args.n_workers,
                    seed=args.seed,
-                   ref_point=[0, 8])
+                   ref_point=[8, 0])
+modehb.run(total_cost=args.runtime)
