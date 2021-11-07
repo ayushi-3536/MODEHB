@@ -1,0 +1,12 @@
+Configuration:
+  batch_norm, Value: False
+  batch_size, Value: 3
+  global_avg_pooling, Value: True
+  kernel_size, Value: 5
+  lr_init, Value: 0.00017355674086288745
+  n_conv_0, Value: 91
+  n_conv_1, Value: 52
+  n_conv_l, Value: 2
+  n_fc_0, Value: 6
+  n_fc_1, Value: 99
+  n_fc_l, Value: 2
