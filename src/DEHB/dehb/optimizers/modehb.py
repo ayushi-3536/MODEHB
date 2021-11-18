@@ -415,75 +415,82 @@ class MODEHB(DEHB):
         2) Number of Successive Halving brackets run under Hyperband (brackets)
         3) Total computational cost (in seconds) aggregated by all function evaluations (total_cost)
         """
-        # checks if a Dask client exists
-        if len(kwargs) > 0 and self.n_workers > 1 and isinstance(self.client, Client):
-            # broadcasts all additional data passed as **kwargs to all client workers
-            # this reduces overload in the client-worker communication by not having to
-            # serialize the redundant data used by all workers for every job
-            self.shared_data = self.client.scatter(kwargs, broadcast=True)
+        try:
+            # checks if a Dask client exists
+            if len(kwargs) > 0 and self.n_workers > 1 and isinstance(self.client, Client):
+                # broadcasts all additional data passed as **kwargs to all client workers
+                # this reduces overload in the client-worker communication by not having to
+                # serialize the redundant data used by all workers for every job
+                self.shared_data = self.client.scatter(kwargs, broadcast=True)
 
-        # allows each worker to be mapped to a different GPU when running on a single node
-        # where all available GPUs are accessible
-        self.single_node_with_gpus = single_node_with_gpus
-        if self.single_node_with_gpus:
-            self.distribute_gpus()
+            # allows each worker to be mapped to a different GPU when running on a single node
+            # where all available GPUs are accessible
+            self.single_node_with_gpus = single_node_with_gpus
+            if self.single_node_with_gpus:
+                self.distribute_gpus()
 
-        self.start = time.time()
-        if verbose:
-            print("\nLogging at {} for optimization starting at {}\n".format(
-                os.path.join(os.getcwd(), self.log_filename),
-                time.strftime("%x %X %Z", time.localtime(self.start))
-            ))
-        if debug:
-            logger.configure(handlers=[{"sink": sys.stdout}])
-        while True:
-            if self._is_run_budget_exhausted(fevals, brackets, total_cost):
-                break
-            if self.is_worker_available():
-                job_info = self._get_next_job()
-                if brackets is not None and job_info['bracket_id'] >= brackets:
-                    # ignore submission and only collect results
-                    # when brackets are chosen as run budget, an extra bracket is created
-                    # since iteration_counter is incremented in _get_next_job() and then checked
-                    # in _is_run_budget_exhausted(), therefore, need to skip suggestions
-                    # coming from the extra allocated bracket
-                    # _is_run_budget_exhausted() will not return True until all the lower brackets
-                    # have finished computation and returned its results
-                    pass
-                else:
-                    if self.n_workers > 1 or isinstance(self.client, Client):
-                        self.logger.debug("{}/{} worker(s) available.".format(
-                            self._get_worker_count() - len(self.futures), self._get_worker_count()
-                        ))
-                    # submits job_info to a worker for execution
-                    self.submit_job(job_info, **kwargs)
-                    if verbose:
-                        budget = job_info['budget']
-                        self._verbosity_runtime(fevals, brackets, total_cost)
-                        self.logger.debug(
-                            "Evaluating a configuration with budget {} under "
-                            "bracket ID {}".format(budget, job_info['bracket_id'])
-                        )
-                    self._verbosity_debug()
+            self.start = time.time()
+            if verbose:
+                print("\nLogging at {} for optimization starting at {}\n".format(
+                    os.path.join(os.getcwd(), self.log_filename),
+                    time.strftime("%x %X %Z", time.localtime(self.start))
+                ))
+            if debug:
+                logger.configure(handlers=[{"sink": sys.stdout}])
+            while True:
+                if self._is_run_budget_exhausted(fevals, brackets, total_cost):
+                    break
+                if self.is_worker_available():
+                    job_info = self._get_next_job()
+                    if brackets is not None and job_info['bracket_id'] >= brackets:
+                        # ignore submission and only collect results
+                        # when brackets are chosen as run budget, an extra bracket is created
+                        # since iteration_counter is incremented in _get_next_job() and then checked
+                        # in _is_run_budget_exhausted(), therefore, need to skip suggestions
+                        # coming from the extra allocated bracket
+                        # _is_run_budget_exhausted() will not return True until all the lower brackets
+                        # have finished computation and returned its results
+                        pass
+                    else:
+                        if self.n_workers > 1 or isinstance(self.client, Client):
+                            self.logger.debug("{}/{} worker(s) available.".format(
+                                self._get_worker_count() - len(self.futures), self._get_worker_count()
+                            ))
+                        # submits job_info to a worker for execution
+                        self.submit_job(job_info, **kwargs)
+                        if verbose:
+                            budget = job_info['budget']
+                            self._verbosity_runtime(fevals, brackets, total_cost)
+                            self.logger.debug(
+                                "Evaluating a configuration with budget {} under "
+                                "bracket ID {}".format(budget, job_info['bracket_id'])
+                            )
+                        self._verbosity_debug()
 
-            self._fetch_results_from_workers()
-            if save_history and self.history is not None:
-                self._save_history()
-            self.clean_inactive_brackets()
-        logger.debug("constraint tracker is {}", self.history)
-        # end of while
+                self._fetch_results_from_workers()
+                if save_history and self.history is not None:
+                    self._save_history()
+                self.clean_inactive_brackets()
+            logger.debug("constraint tracker is {}", self.history)
+            # end of while
 
-        if verbose and len(self.futures) > 0:
-            self.logger.debug(
-                "DEHB optimisation over! Waiting to collect results from workers running..."
-            )
-        while len(self.futures) > 0:
-            self._fetch_results_from_workers()
-            if save_intermediate:
-                self._save_incumbent()
-            if save_history and self.history is not None:
-                self._save_history()
-            time.sleep(0.05)  # waiting 50ms
-        self.save_results()
+            if verbose and len(self.futures) > 0:
+                self.logger.debug(
+                    "DEHB optimisation over! Waiting to collect results from workers running..."
+                )
+            while len(self.futures) > 0:
+                self._fetch_results_from_workers()
+                if save_intermediate:
+                    self._save_incumbent()
+                if save_history and self.history is not None:
+                    self._save_history()
+                time.sleep(0.05)  # waiting 50ms
+            self.save_results()
+            return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
 
-        return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
+        except(KeyboardInterrupt, Exception):
+            logger.info("time limit extended saving experiments, saving the result")
+            self.save_results()
+            return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
+            raise
+

@@ -48,16 +48,21 @@ output_path = create_output_dir(args)
 output_path = args.output_path + "_" + str(args.run_id) + '/'
 os.makedirs(output_path, exist_ok=True)
 cs = FashionSearchSpace()
-modehb = MODEHB(objective_function=objective_function,
-                   cs=cs,
-                   dimensions=len(cs.get_hyperparameters()),
-                   min_budget=args.min_budget,
-                   max_budget=args.max_budget,
-                   eta=args.eta,
-                   output_path=output_path,
-                   # if client is not None and of type Client, n_workers is ignored
-                   # if client is None, a Dask client with n_workers is set up
-                   n_workers=args.n_workers,
-                   seed=args.seed,
-                   ref_point=[8, 0])
-modehb.run(total_cost=args.runtime)
+signal.signal(signal.SIGALRM, timeouthandler)  # register the handler
+signal.alarm(args.runtime)
+try:
+    modehb = MODEHB(objective_function=objective_function,
+                       cs=cs,
+                       dimensions=len(cs.get_hyperparameters()),
+                       min_budget=args.min_budget,
+                       max_budget=args.max_budget,
+                       eta=args.eta,
+                       output_path=output_path,
+                       # if client is not None and of type Client, n_workers is ignored
+                       # if client is None, a Dask client with n_workers is set up
+                       n_workers=args.n_workers,
+                       seed=args.seed,
+                       ref_point=[8, 0])
+    modehb.run(total_cost=args.runtime)
+except OutOfTimeException:
+    logger.info("catching out of time error")
