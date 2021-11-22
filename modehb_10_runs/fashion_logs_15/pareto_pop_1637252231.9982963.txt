@@ -1,0 +1,60 @@
+Configuration:
+  batch_norm, Value: False
+  batch_size, Value: 368
+  global_avg_pooling, Value: True
+  kernel_size, Value: 5
+  lr_init, Value: 0.006296248309693711
+  n_conv_0, Value: 288
+  n_conv_l, Value: 1
+  n_fc_0, Value: 3
+  n_fc_l, Value: 1
+Configuration:
+  batch_norm, Value: True
+  batch_size, Value: 368
+  global_avg_pooling, Value: True
+  kernel_size, Value: 5
+  lr_init, Value: 0.006296248309693711
+  n_conv_0, Value: 288
+  n_conv_l, Value: 1
+  n_fc_0, Value: 3
+  n_fc_l, Value: 1
+Configuration:
+  batch_norm, Value: True
+  batch_size, Value: 146
+  global_avg_pooling, Value: True
+  kernel_size, Value: 5
+  lr_init, Value: 0.00713437286046934
+  n_conv_0, Value: 299
+  n_conv_l, Value: 1
+  n_fc_0, Value: 3
+  n_fc_l, Value: 1
+Configuration:
+  batch_norm, Value: True
+  batch_size, Value: 12
+  global_avg_pooling, Value: True
+  kernel_size, Value: 5
+  lr_init, Value: 0.001738069207329204
+  n_conv_0, Value: 318
+  n_conv_l, Value: 1
+  n_fc_0, Value: 4
+  n_fc_l, Value: 1
+Configuration:
+  batch_norm, Value: True
+  batch_size, Value: 92
+  global_avg_pooling, Value: True
+  kernel_size, Value: 5
+  lr_init, Value: 0.008084064288544163
+  n_conv_0, Value: 309
+  n_conv_l, Value: 1
+  n_fc_0, Value: 3
+  n_fc_l, Value: 1
+Configuration:
+  batch_norm, Value: True
+  batch_size, Value: 92
+  global_avg_pooling, Value: True
+  kernel_size, Value: 5
+  lr_init, Value: 0.008084064288544163
+  n_conv_0, Value: 320
+  n_conv_l, Value: 1
+  n_fc_0, Value: 7
+  n_fc_l, Value: 1
