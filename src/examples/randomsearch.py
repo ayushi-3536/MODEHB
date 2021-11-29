@@ -1,12 +1,14 @@
 from .problems.flowers import FlowersSearchSpace
-
+from .problems.fashion import FashionSearchSpace
 import sys
 from loguru import logger
 import time
 from .default_utils import *
 import json
 import os
-from .problems.flowers import evaluate_network
+from .problems.flowers import evaluate_network as flowernet
+from .problems.fashion import evaluate_network as fashionnet
+
 import numpy as np
 
 logger.configure(handlers=[{"sink": sys.stdout, "level": "DEBUG"}])
@@ -75,10 +77,12 @@ def input_arguments():
 
 def objective_function(cfg, budget):
     start = time.time()
-    metrics = evaluate_network(cfg, budget=int(budget))
+    metrics = fashionnet(cfg, budget=int(budget))
     acc = metrics['val_acc_1']
     cost = time.time() - start
     total_model_params = metrics['num_params']
+    total_runtime = metrics['total_runtime']
+    eval_runtime = metrics['eval_runtime']
     logger.info("budget:{}, numparams:{}, acc:{}", budget, total_model_params, acc)
     with open(output_path + 'dehb_run.json', 'a+')as f:
         json.dump({'configuration': dict(cfg), 'acc': acc,
@@ -86,8 +90,8 @@ def objective_function(cfg, budget):
 
         f.write("\n")
 
-    return ({"cost": cost,
-             "fitness": [acc, total_model_params]})  # Because minimize!
+    return ({"cost": total_runtime,
+             "fitness": [acc, total_model_params,eval_runtime]})  # Because minimize!
 
 
 args = input_arguments()
@@ -107,7 +111,7 @@ def rs(seed):
         run_info = objective_function(config, args.max_budget)
         fitness, cost = run_info["fitness"], run_info["cost"]
         logger.info("fitness:{}", fitness)
-        fit = [np.array([fitness[0], fitness[1]])]
+        fit = [np.array([fitness[0], fitness[1],fitness[2],cost])]
         with open(os.path.join(output_path, "res_random_search{}.txt"), 'a+') as f:
             np.savetxt(f, fit)
 

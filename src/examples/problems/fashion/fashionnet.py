@@ -10,6 +10,7 @@ import numpy as np
 
 from .utils import Accuracy, AccuracyTop1, AccuracyTop3
 import pathlib
+import time
 
 
 
@@ -130,6 +131,7 @@ class FashionNet(nn.Module):
 
 
 def evaluate_network(config, budget=None):
+    start = time.time()
 
     budget = budget if budget else config['budget']
 
@@ -183,15 +185,17 @@ def evaluate_network(config, budget=None):
         t.update()
 
     num_params = np.sum(p.numel() for p in net.parameters())
-    
+    eval_start = time.time()
     val_acc1, val_acc3 = net.eval_fn(ds_val, device)
+    eval_runtime=time.time()-eval_start
     tst_acc1, tst_acc3 = net.eval_fn(ds_test, device)
 
     t.set_postfix(
         train_acc=acc,
         val_acc=val_acc1,
         tst_acc=tst_acc1,
-        len=np.log10(num_params))
+        len=np.log10(num_params),
+        eval_runtime=eval_runtime)
     t.close()
 
     return {
@@ -199,7 +203,9 @@ def evaluate_network(config, budget=None):
         'val_acc_3': -100.0 * val_acc3,
         'tst_acc_1': -100.0 * tst_acc1,
         'tst_acc_3': -100.0 * tst_acc3,
-        'num_params': np.log10(num_params)
+        'num_params': np.log10(num_params),
+        'total_runtime': time.time()-start,
+        'eval_runtime':eval_runtime
     }
 
 
