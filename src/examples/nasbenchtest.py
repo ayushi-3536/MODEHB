@@ -192,13 +192,14 @@ def nas_query_function(cfg, seed=1, budget=200, run=1, **kwargs):
         params= 1
     valid_acc = fitness
     error = 1 - fitness / 100
-    with open(output_path + 'dehb_run.json', 'a+')as f:
-        json.dump({'configuration': dict(cfg), 'error': error, 'acc': valid_acc,
-                   'params': params, 'num_epochs': budget}, f)
-
-        f.write("\n")
     time += (runtime+info['valid-per-time'])
     logger.info("time exhaused:{}",time)
+    with open(output_path + 'dehb_run.json', 'a+')as f:
+        json.dump({'configuration': dict(cfg), 'error': error, 'acc': valid_acc,
+                   'params': params, 'num_epochs': budget,'cost':time}, f)
+
+        f.write("\n")
+
     # return fitness, cost
     return ({"cost":time ,
              "fitness": [-fitness, params]})
