@@ -10,7 +10,7 @@ def create_output_dir(args):
     else:
         folder = args.folder
 
-    output_path = os.path.join(args.output_path, args.dataset, folder)
+    output_path = os.path.join(args.output_path, folder)
     return output_path
 
 def default_arguments():
