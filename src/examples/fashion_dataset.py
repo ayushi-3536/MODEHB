@@ -6,13 +6,20 @@ import time
 import json
 from .default_utils import *
 from .problems.fashion.fashionnet import evaluate_network
-
+import signal
 logger.configure(handlers=[{"sink": sys.stdout, "level": "INFO"}])
 _logger_props = {
     "format": "{time} {level} {message}",
     "enqueue": True,
     "rotation": "500 MB"
 }
+class OutOfTimeException(Exception):
+    # Custom exception for easy handling of timeout
+    pass
+
+def signal_handler(sig, frame):
+    logger.info('Job is being cancelled')
+    raise OutOfTimeException
 
 
 def input_arguments():
@@ -91,7 +98,7 @@ output_path = create_output_dir(args)
 output_path = args.output_path + "_" + str(args.run_id) + '/'
 os.makedirs(output_path, exist_ok=True)
 cs = FashionSearchSpace()
-signal.signal(signal.SIGALRM, timeouthandler)  # register the handler
+signal.signal(signal.SIGALRM, signal_handler)  # register the handler
 signal.alarm(args.runtime)
 try:
     modehb = MODEHB(objective_function=objective_function,
