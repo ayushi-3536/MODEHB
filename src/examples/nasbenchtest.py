@@ -12,10 +12,10 @@ import argparse
 import numpy as np
 import ConfigSpace
 from loguru import logger
-from dependencies.XAutoDL.xautodl.models import CellStructure, get_search_spaces
-import DEHB.dehb.optimizers.modehb as mo
+from ..dependencies.XAutoDL.xautodl.models import CellStructure, get_search_spaces
+from ..DEHB.dehb.optimizers import modehb as mo
 
-logger.configure(handlers=[{"sink": sys.stdout, "level": "INFO"}])
+logger.configure(handlers=[{"sink": sys.stdout, "level": "DEBUG"}])
 _logger_props = {
     "format": "{time} {level} {message}",
     "enqueue": True,
@@ -135,13 +135,14 @@ def input_arguments():
                         help='to print progress or not')
     parser.add_argument('--folder', default=None, type=str, nargs='?',
                         help='name of folder where files will be dumped')
-    parser.add_argument('--nas_bench_file', default='..//NATS-tss-v1_0-3ffb9-simple', type=str, nargs='?',
+    parser.add_argument('--nas_bench_file', default='NATS-tss-v1_0-3ffb9-simple', type=str, nargs='?',
                         help='location of nas benchmark file')
     parser.add_argument('--version', default=None, type=str, nargs='?',
                         help='DEHB version to run')
     parser.add_argument('--n_workers', type=int, default=1,
                         help='Number of CPU workers for DEHB to distribute function evaluations to')
-
+    parser.add_argument('--runtime', type=int, default=10800,
+                        help='total runtime')
     parser.add_argument('-s', "--constraint_max_model_size",
                         default=2e7,
                         help="maximal model size constraint",
@@ -186,23 +187,23 @@ def nas_query_function(cfg, seed=1, budget=200, run=1, **kwargs):
     runtime = info['train-all-time']
     try:
         #cost = info['valid-per-time']
-        params= info_cost['params']
+        num_params= info_cost['params']
     except:
         #cost = info['valtest-per-time']
-        params= 1
+        num_params= 1
     valid_acc = fitness
     error = 1 - fitness / 100
     time += (runtime+info['valid-per-time'])
     logger.info("time exhaused:{}",time)
     with open(output_path + 'dehb_run.json', 'a+')as f:
         json.dump({'configuration': dict(cfg), 'error': error, 'acc': valid_acc,
-                   'params': params, 'num_epochs': budget,'cost':time}, f)
+                   'params': num_params, 'num_epochs': budget,'cost':time}, f)
 
         f.write("\n")
 
     # return fitness, cost
     return ({"cost":time ,
-             "fitness": [-fitness, params]})
+             "fitness": [-valid_acc, num_params]})
 
 
 # Initializing DEHB object
@@ -221,7 +222,7 @@ def call_optimizer(args, cs, output_path, dimensions):
                        # if client is None, a Dask client with n_workers is set up
                        n_workers=args.n_workers,
                        seed=args.seed,
-                       ref_point=[1, 1])
+                       ref_point=[0, 1])
 
     if args.runs is None:  # for a single run
         if not args.fix_seed:
@@ -237,7 +238,7 @@ def call_optimizer(args, cs, output_path, dimensions):
             if args.verbose:
                 print("\nRun #{:<3}\n{}".format(run_id + 1, '-' * 8))
             # Running DE iterations
-            runtime, history, pareto_pop, pareto_fit = modehb.run(iterations=args.iter,
+            runtime, history, pareto_pop, pareto_fit = modehb.run(iterations=args.iter,total_cost=args.runtime,
                                                                   verbose=args.verbose)
             # res = calculate_regrets(history, runtime)
             # essential step to not accumulate consecutive runs
@@ -271,10 +272,12 @@ args.fix_seed = True if args.fix_seed == 'True' else False
 min_budget = args.min_budget
 max_budget = args.max_budget
 dataset = args.dataset
-
+import os
 output_path = create_output_dir(args)
 output_path = args.output_path + "_" + str(args.run_id) + '/'
 os.makedirs(output_path, exist_ok=True)
+print("nas file",os.getcwd()+args.nas_bench_file)
+print(os.getcwd())
 api, search_space = load_nas_201_api(args.nas_bench_file)
 
 # Parameter space to be used by DE
