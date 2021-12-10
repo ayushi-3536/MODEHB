@@ -10,7 +10,7 @@ from .mode import MoAsyncDE
 from ..optimizers import DEHB
 import random
 
-logger.configure(handlers=[{"sink": sys.stdout, "level": "INFO"}])
+logger.configure(handlers=[{"sink": sys.stdout, "level": "DEBUG"}])
 _logger_props = {
     "format": "{time} {level} {message}",
     "enqueue": True,

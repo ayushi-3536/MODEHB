@@ -7,7 +7,7 @@ import json
 from .default_utils import *
 from .problems.fashion.fashionnet import evaluate_network
 import signal
-logger.configure(handlers=[{"sink": sys.stdout, "level": "INFO"}])
+logger.configure(handlers=[{"sink": sys.stdout, "level": "DEBUG"}])
 _logger_props = {
     "format": "{time} {level} {message}",
     "enqueue": True,
@@ -88,7 +88,7 @@ def objective_function(cfg, seed, budget, run=1, **kwargs):
         f.write("\n")
 
     return ({"cost": cost,
-             "fitness": [total_model_params, acc]})  # Because minimize!
+             "fitness": [acc, total_model_params]})  # Because minimize!
 
 
 args = input_arguments()
@@ -112,7 +112,7 @@ try:
                        # if client is None, a Dask client with n_workers is set up
                        n_workers=args.n_workers,
                        seed=args.seed,
-                       ref_point=[8, 0])
+                       ref_point=[0,8])
     modehb.run(total_cost=args.runtime)
 except OutOfTimeException:
     logger.info("catching out of time error")
