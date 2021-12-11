@@ -488,8 +488,8 @@ class MODEHB(DEHB):
             self.save_results()
             return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
 
-        except(KeyboardInterrupt, Exception):
-            logger.info("time limit extended saving experiments, saving the result")
+        except(KeyboardInterrupt, Exception) as err:
+            logger.error("exception caught:{}",err)
             self.save_results()
             return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
             raise
