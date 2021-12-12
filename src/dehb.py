@@ -70,17 +70,20 @@ def _hypervolume_evolution_single_dehb(data,cum_time):
 #     data = _hypervolume_evolution_single(exp)
 #     data.to_csv(path+'/'+exp.name+'.csv')
 
+import  argparse
 import os
 
-path = 'C:\\Users\\ayush\\OneDrive\\Documents\\courses\\automl\\project\\multiobj\\multi-obj-baselines\\flower_dehb'
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', default='results_msehvi', type=str, help='Timeout in sec. 0 -> no timeout')
+args = parser.parse_args()
 extension = 'txt'
-os.chdir(path)
+os.chdir(args.path)
 result = glob.glob('*.{}'.format(extension))
 print(result)
 #reg_hv,times,f_pf_modehb = graph(path,result)
 #r = [np.loadtxt(path + '\\' + f) for f in result]
 for idx,f in enumerate(result):
-        r = np.loadtxt(path + '\\' + f)
+        r = np.loadtxt(args.path + '/' + f)
         r = np.array(r)
         #print(r)
         print("r:{}",r.shape)
@@ -95,4 +98,4 @@ for idx,f in enumerate(result):
         #print("data:{}",data)
         #ax.legend(loc="lower right")
         data = _hypervolume_evolution_single_dehb(data,time)
-        data.to_csv(path+'\\full_'+str(idx)+'.csv')
+        data.to_csv(args.path+'/full_'+str(idx)+'.csv')
