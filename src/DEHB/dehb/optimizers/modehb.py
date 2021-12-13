@@ -325,7 +325,7 @@ class MODEHB(DEHB):
         fit.extend(current_fitness)
         curr_idx = len(fit)-1
         #parent_idx = pop.tolist().index(target)
-        parent_idx = np.any(np.all(target == pop))
+        parent_idx = np.any(np.all(target == pop, axis=1))
         logger.debug("parent idx:{}",parent_idx)
 
         fitness = np.array([[x[0], x[1]] for x in fit])
