@@ -365,7 +365,7 @@ class MODEHB(DEHB):
         with open(os.path.join(self.output_path, "pareto_fit_{}.txt".format(time.time())), 'w') as f:
                 np.savetxt(f, self.pareto_fit)
         with open(os.path.join(self.output_path, "pareto_pop_{}.txt".format(time.time())), 'w') as f:
-              for item in self.pareto_configs:
+              for item in self.pareto_pop:
                 f.write(str(item))
         if self.history is not None:
                 logger.debug("history {}", self.history)
