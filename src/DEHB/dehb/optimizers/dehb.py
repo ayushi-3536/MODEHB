@@ -779,8 +779,8 @@ class DEHB(DEHBBase):
                         )
                     self._verbosity_debug()
             self._fetch_results_from_workers()
-            if save_intermediate and self.inc_config is not None:
-                self._save_incumbent()
+            # if save_intermediate and self.inc_config is not None:
+            #     self._save_incumbent()
             if save_history and self.history is not None:
                 self._save_history()
             self.clean_inactive_brackets()
@@ -792,8 +792,8 @@ class DEHB(DEHBBase):
             )
         while len(self.futures) > 0:
             self._fetch_results_from_workers()
-            if save_intermediate and self.inc_config is not None:
-                self._save_incumbent()
+            # if save_intermediate and self.inc_config is not None:
+            #     self._save_incumbent()
             if save_history and self.history is not None:
                 self._save_history()
             time.sleep(0.05)  # waiting 50ms
@@ -808,6 +808,6 @@ class DEHB(DEHBBase):
             config = self.vector_to_configspace(self.inc_config)
             for k, v in config.get_dictionary().items():
                 self.logger.info("{}: {}".format(k, v))
-        self._save_incumbent()
+        #self._save_incumbent()
         self._save_history()
         return np.array(self.traj), np.array(self.runtime), np.array(self.history, dtype=object)

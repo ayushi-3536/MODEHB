@@ -371,6 +371,7 @@ class MODEHB(DEHB):
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
                 logger.debug("modifies budget configs:{}", configs)
                 self.de[budget].fitness[parent_id] = np.array(fitness)
+                self._update_pareto(fitness, config)
             #this just writes all the fitness of the runs till now
             if self.history is not None and self.count_eval % 10000 == 0:
                 logger.debug("history {}", self.history)
@@ -379,7 +380,7 @@ class MODEHB(DEHB):
                 # for line in costs:
                 np.savetxt(file_name, costs)
                 file_name.close()
-            self._update_pareto(fitness, config)
+
             # book-keeping
             if(self.count_eval>1):
                 runtime = self.runtime[-1]+cost
@@ -480,8 +481,8 @@ class MODEHB(DEHB):
                 )
             while len(self.futures) > 0:
                 self._fetch_results_from_workers()
-                if save_intermediate:
-                    self._save_incumbent()
+                # if save_intermediate:
+                #     self._save_incumbent()
                 if save_history and self.history is not None:
                     self._save_history()
                 time.sleep(0.05)  # waiting 50ms
