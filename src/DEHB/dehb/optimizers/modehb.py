@@ -227,20 +227,20 @@ class MODEHB(DEHB):
         np.random.seed(seed)
         # logger.debug("mutation pop idx:{},,configs:{}", mutation_pop_idx,num_configs)
         filler = mut_pop - len(mutation_pop)
-        if len(mutation_pop) < mut_pop:  # self.de[budget]._min_pop_size:
-            if (self.best_pareto_config is not None and len(self.best_pareto_config) >= filler):
-                ''' This is done to promote diversity in the population to tradeoff exploitation with exploration by not directly selecting the best
-                    best candidates but sample from few top candidates, this should vary if population increases and can be one of the factors
-                    that can be tuned like mutation or recombination factors
-                    Todo: discuss what to do here, sampling doesn't make any sense here anymore as we are fixing k to filler
-                '''
-                k = filler ;+ 1
-                top_pareto_configs = self.best_pareto_config[:k]
-                pop_idx = np.random.choice(np.arange(len(top_pareto_configs)), filler, replace=False)
-                pop = [top_pareto_configs[idx] for idx in pop_idx]
-                logger.debug("getting best hv config:{}", pop)
-                if (pop is not None and len(pop) > 0):
-                    mutation_pop = np.concatenate((mutation_pop, pop))
+        # if len(mutation_pop) < mut_pop:  # self.de[budget]._min_pop_size:
+        #     if (self.best_pareto_config is not None and len(self.best_pareto_config) >= filler):
+        #         ''' This is done to promote diversity in the population to tradeoff exploitation with exploration by not directly selecting the best
+        #             best candidates but sample from few top candidates, this should vary if population increases and can be one of the factors
+        #             that can be tuned like mutation or recombination factors
+        #             Todo: discuss what to do here, sampling doesn't make any sense here anymore as we are fixing k to filler
+        #         '''
+        #         k = filler ;+ 1
+        #         top_pareto_configs = self.best_pareto_config[:k]
+        #         pop_idx = np.random.choice(np.arange(len(top_pareto_configs)), filler, replace=False)
+        #         pop = [top_pareto_configs[idx] for idx in pop_idx]
+        #         logger.debug("getting best hv config:{}", pop)
+        #         if (pop is not None and len(pop) > 0):
+        #             mutation_pop = np.concatenate((mutation_pop, pop))
         if len(mutation_pop) < mut_pop:
             logger.debug("concating all budget pop, mutation_pop:{}", mutation_pop)
             new_pop = self.de[budget]._init_mutant_population(
@@ -458,7 +458,7 @@ class MODEHB(DEHB):
             logger.debug("ref point:{}",self.ref_point)
             with open(os.path.join(self.output_path, "hv_contribution.txt"), 'a') as f:
                 logger.debug("paeto fit:{}",self.pareto_fit)
-                ra = [[pareto.contributionHV(self.pareto_fit,self.ref_point),self.runtime[-1],self.count_eval ]]
+                ra = [[pareto.contributionHV(self.pareto_fit,self.ref_point),cost,self.count_eval ]]
                 logger.debug("pareto:{}", pareto.contributionHV(self.pareto_fit,self.ref_point))
                 np.savetxt(f,ra)
 
