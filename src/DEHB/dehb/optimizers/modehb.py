@@ -326,7 +326,13 @@ class MODEHB(DEHB):
         curr_idx = len(fit)-1
         #parent_idx = pop.tolist().index(target)
         parent_idx = np.any(np.all(target == pop, axis=1))
+        for i,p in enumerate(pop):
+            if np.all(target == p):
+                logger.debug("ass index:{}",i)
+                parent_idx = i
+            logger.debug("skipping")
         logger.debug("parent idx:{}",parent_idx)
+
 
         fitness = np.array([[x[0], x[1]] for x in fit])
         index_list = np.array(list(range(len(fit))))
