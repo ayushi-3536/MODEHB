@@ -325,7 +325,7 @@ class MODEHB(DEHB):
         fit.extend(current_fitness)
         curr_idx = len(fit)-1
         parent_idx = pop.index(target)
-        logger.debuf("parent idx:{}",parent_idx)
+        logger.debug("parent idx:{}",parent_idx)
 
         fitness = np.array([[x[0], x[1]] for x in fit])
         index_list = np.array(list(range(len(fit))))
@@ -419,7 +419,7 @@ class MODEHB(DEHB):
             parent_fitness = self.de[budget].fitness[parent_id]
             logger.debug("budget:{}, parent id:{}",budget, parent_id)
             logger.debug("fitness :{},parent fitness{}", fitness, parent_fitness)
-            if self.check_fitness(fitness, parent_fitness):
+            if self.check_fitness(fitness, parent_fitness,budget,parent_id):
                 self.de[budget].population[parent_id] = config
                 logger.debug("config in parents place :{}", self.vector_to_configspace(config))
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
