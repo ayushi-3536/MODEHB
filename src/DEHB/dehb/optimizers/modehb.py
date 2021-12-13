@@ -229,10 +229,11 @@ class MODEHB(DEHB):
         filler = mut_pop - len(mutation_pop)
         if len(mutation_pop) < mut_pop:  # self.de[budget]._min_pop_size:
             if (self.best_pareto_config is not None and len(self.best_pareto_config) >= filler):
-                # This is done to promote diversity in the population to tradeoff exploitation with exploration by not directly selecting the best
-                #best candidates but sample from few top candidates, this should vary if population increases and can be one of the factors
-                # that can be tuned like mutation or recombination factors
-                ##Todo: discuss what to do here, sampling doesn't make any sense here anymore as we are fixing k to filler
+                ''' This is done to promote diversity in the population to tradeoff exploitation with exploration by not directly selecting the best
+                    best candidates but sample from few top candidates, this should vary if population increases and can be one of the factors
+                    that can be tuned like mutation or recombination factors
+                    Todo: discuss what to do here, sampling doesn't make any sense here anymore as we are fixing k to filler
+                '''
                 k = filler ;+ 1
                 top_pareto_configs = self.best_pareto_config[:k]
                 pop_idx = np.random.choice(np.arange(len(top_pareto_configs)), filler, replace=False)
@@ -313,8 +314,9 @@ class MODEHB(DEHB):
         parent_idx = np.any(np.all(target == pop, axis=1))
         for i,p in enumerate(pop):
             if np.all(target == p):
-                logger.debug("ass index:{}",i)
+                logger.debug("assgn index:{}",i)
                 parent_idx = i
+                break;
             logger.debug("skipping")
         logger.debug("parent idx:{}",parent_idx)
 
@@ -456,8 +458,8 @@ class MODEHB(DEHB):
             logger.debug("ref point:{}",self.ref_point)
             with open(os.path.join(self.output_path, "hv_contribution.txt"), 'a') as f:
                 logger.debug("paeto fit:{}",self.pareto_fit)
-                ra = [[self.runtime[-1],pareto.contributionHV(self.pareto_fit,self.ref_point)]]
-                logger.debug("pareto:{}",pareto.contributionHV(self.pareto_fit,self.ref_point))
+                ra = [[pareto.contributionHV(self.pareto_fit,self.ref_point),self.runtime[-1],self.count_eval ]]
+                logger.debug("pareto:{}", pareto.contributionHV(self.pareto_fit,self.ref_point))
                 np.savetxt(f,ra)
 
         # remove processed future
