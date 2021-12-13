@@ -98,40 +98,38 @@ class MoAsyncDE(MODE):
         self.highest_budget = 5
         return self._min_pop_size
 
-    def mutation(self, seed, current=None, alt_pop=None):
+    def mutation(self, current=None, alt_pop=None):
         '''Performs DE mutation
         '''
         if self.mutation_strategy == 'rand1':
-            r1, r2, r3 = self.sample_population(size=3, seed=seed, alt_pop=alt_pop)
+            r1, r2, r3 = self.sample_population(size=3, alt_pop=alt_pop)
             mutant = self.mutation_rand1(r1, r2, r3)
 
         elif self.mutation_strategy == 'rand2':
-            r1, r2, r3, r4, r5 = self.sample_population(size=5, seed=seed, alt_pop=alt_pop)
+            r1, r2, r3, r4, r5 = self.sample_population(size=5,alt_pop=alt_pop)
             mutant = self.mutation_rand2(r1, r2, r3, r4, r5)
 
         elif self.mutation_strategy == 'rand2dir':
-            r1, r2, r3 = self.sample_population(size=3, seed=seed, alt_pop=alt_pop)
+            r1, r2, r3 = self.sample_population(size=3,  alt_pop=alt_pop)
             mutant = self.mutation_rand2dir(r1, r2, r3)
 
         return mutant
 
-    def _init_mutant_population(self, pop_size, seed, population=None, target=None, best=None):
+    def _init_mutant_population(self, pop_size,population=None, target=None, best=None):
         '''Generates pop_size mutants from the passed population
         '''
-        population = pop_size
-        np.random.seed(seed)
         mutants = np.random.uniform(low=0.0, high=1.0, size=(pop_size, self.dimensions))
         for i in range(pop_size):
-            mutants[i] = self.mutation(current=target, seed=seed, alt_pop=population)
+            mutants[i] = self.mutation(current=target, alt_pop=population)
         return mutants
 
-    def sample_population(self, size: int = 3, seed=1, alt_pop: List = None) -> List:
+    def sample_population(self, size: int = 3, alt_pop: List = None) -> List:
         '''Samples 'size' individuals
 
         If alt_pop is None or a list/array of None, sample from own population
         Else sample from the specified alternate population (alt_pop)
         '''
-        np.random.seed(seed)
+
         if isinstance(alt_pop, list) or isinstance(alt_pop, np.ndarray):
             idx = [indv is None for indv in alt_pop]
             if any(idx):

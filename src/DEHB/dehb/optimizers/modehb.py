@@ -244,9 +244,7 @@ class MODEHB(DEHB):
         if len(mutation_pop) < mut_pop:
             logger.debug("concating all budget pop, mutation_pop:{}", mutation_pop)
             new_pop = self.de[budget]._init_mutant_population(
-                pop_size=filler, seed=seed, population=self._concat_pops(),
-                target=None, best=self.inc_config
-            )
+                pop_size=filler, population=self._concat_pops())
             logger.debug("new pop :{}", new_pop)
             mutation_pop = np.concatenate((mutation_pop, new_pop))
 
