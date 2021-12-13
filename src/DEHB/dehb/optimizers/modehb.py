@@ -298,7 +298,7 @@ class MODEHB(DEHB):
     ''' This function checks the fitness of parent and evaluated config and replace parent only if its fitness(evaluated by NDS and hypervolume)
             is greater than the parent '''
 
-    def check_fitness(self, current_fitness, parent_fitness,budget,parent_id):
+    def check_fitness(self, current_fitness, parent_fitness,budget,parent_id,config):
         pop, fit = self._concat_all_budget_pop()
         target = self.de[budget].population[parent_id]
         logger.debug("all population fitness:{}", fit)
@@ -307,6 +307,7 @@ class MODEHB(DEHB):
         logger.debug("target:{}",target)
         logger.debug("pop:{}",pop)
         fit.extend([current_fitness])
+        pop.extend([config])
         curr_idx = len(fit)-1
         #parent_idx = pop.tolist().index(target)
         parent_idx = np.any(np.all(target == pop, axis=1))
@@ -325,11 +326,8 @@ class MODEHB(DEHB):
         fronts, index_return_list = pareto.nDS_all_index_front(np.array(fitness), index_list)
 
         logger.debug("fronts:{}",fronts)
-        logger.debug("fronts index:{}",index_return_list)
-        self.pareto_pop = [pop[i] for i in index_return_list[0]]
-        self.pareto_fit = [fit[i] for i in index_return_list[0]]
-        logger.debug("pareto pop:{}",self.pareto_pop)
-        logger.debug("pareto fit:{}",self.pareto_fit)
+        logger.debug("fronts index:{}",index_return_list[0])
+
         for idx, front_index in enumerate(index_return_list):
             front_index = front_index
             if curr_idx not in front_index and parent_idx not in front_index:
@@ -342,13 +340,21 @@ class MODEHB(DEHB):
                 hv_curr = contributions[front_curr_index]
                 logger.debug("hv contri parent:{}, hv contri child:{}", hv_parent, hv_curr)
                 if (hv_parent < hv_curr):
-                    logger.debug("choosing current:{}", current_fitness)
+                    logger.debug("choosing current:{} and updating pareto ", current_fitness)
+                    self.pareto_pop = [pop[i] for i in index_return_list[0]]
+                    self.pareto_fit = [fit[i] for i in index_return_list[0]]
+                    logger.debug("pareto pop:{}", self.pareto_pop)
+                    logger.debug("pareto fit:{}", self.pareto_fit)
                     return True
                 logger.debug("choosing parent")
                 return False
 
             elif curr_idx in front_index and parent_idx not in front_index:
                 logger.debug("chhose child from front first")
+                self.pareto_pop = [pop[i] for i in index_return_list[0]]
+                self.pareto_fit = [fit[i] for i in index_return_list[0]]
+                logger.debug("pareto pop:{}", self.pareto_pop)
+                logger.debug("pareto fit:{}", self.pareto_fit)
                 return True
             else:
                 logger.debug("chhose parent from front first")
@@ -415,7 +421,7 @@ class MODEHB(DEHB):
             parent_fitness = self.de[budget].fitness[parent_id]
             logger.debug("budget:{}, parent id:{}",budget, parent_id)
             logger.debug("fitness :{},parent fitness{}", fitness, parent_fitness)
-            if self.check_fitness(fitness, parent_fitness,budget,parent_id):
+            if self.check_fitness(fitness, parent_fitness,budget,parent_id,config):
                 self.de[budget].population[parent_id] = config
                 logger.debug("config in parents place :{}", self.vector_to_configspace(config))
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
