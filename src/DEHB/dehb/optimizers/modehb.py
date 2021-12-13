@@ -127,7 +127,7 @@ class MODEHB(DEHB):
                 np.savetxt(f, self.pareto_fit)
         if (self.count_eval % self.log_interval == 0):
             with open(os.path.join(self.output_path, "pareto_pop_{}.txt".format(time.time())), 'w') as f:
-              for item in self.pareto_configs:
+              for item in self.pareto_pop:
                 f.write(str(item))
 
 
