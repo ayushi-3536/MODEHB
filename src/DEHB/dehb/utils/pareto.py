@@ -87,7 +87,7 @@ def nDS_index(costs, index_list):
 
     return fronts, index_return_list
 
-def nDS_index_front(costs, index_list):
+def nDS_all_index_front(costs, index_list):
     """
     Implementation of the non-dominated sorting method
     :param costs: (n_points, m_cost_values) array
@@ -152,99 +152,40 @@ def crowdingDist(fronts, index_list):
 
     return dist_list, index_return_list
 
-
-def nDS(costs: np.ndarray):
-    """
-    Implementation of the non-dominated sorting method
-    :param costs: (n_points, m_cost_values) array
-    :return: list of all fronts
-    """
-    assert type(costs) == np.ndarray
-    assert costs.ndim == 2
-
-    # Stepwise compute the pareto front without all prior dominating points
-    my_costs = costs.copy()
-    remain = np.ones(len(my_costs), dtype=np.bool)
-    logger.debug("remain is {}", remain)
-    fronts = []
-    indexes = []
-    while np.any(remain):
-        front_i = pareto(my_costs)
-        logger.debug("front_i is {}", front_i)
-        fronts.append(my_costs[front_i, :])
-        indexes.append(np.where(front_i))
-        logger.debug("look at indexes list {}", indexes)
-        logger.debug("appendint the pareto result to the fronts which is :  {}", my_costs[front_i, :])
-        my_costs[front_i, :] = np.inf
-        logger.debug("mycosts is {}", my_costs[front_i, :])
-        remain = np.logical_and(remain, np.logical_not(front_i))
-        logger.debug("remain is {}", remain)
-        logger.debug("fronts is {}", fronts)
-    return indexes  # fronts
-
-def nDS_f(costs: np.ndarray):
-    """
-    Implementation of the non-dominated sorting method
-    :param costs: (n_points, m_cost_values) array
-    :return: list of all fronts
-    """
-    assert type(costs) == np.ndarray
-    assert costs.ndim == 2
-
-    # Stepwise compute the pareto front without all prior dominating points
-    my_costs = costs.copy()
-    remain = np.ones(len(my_costs), dtype=np.bool)
-    logger.debug("remain is {}", remain)
-    fronts = []
-    indexes = []
-    while np.any(remain):
-        front_i = pareto(my_costs)
-        logger.debug("front_i is {}", front_i)
-        fronts.append(my_costs[front_i, :])
-        indexes.append(np.where(front_i))
-        logger.debug("look at indexes list {}", indexes)
-        logger.debug("appendint the pareto result to the fronts which is :  {}", my_costs[front_i, :])
-        my_costs[front_i, :] = np.inf
-        logger.debug("mycosts is {}", my_costs[front_i, :])
-        remain = np.logical_and(remain, np.logical_not(front_i))
-        logger.debug("remain is {}", remain)
-        logger.debug("fronts is {}", fronts)
-    return fronts
-
-
-def computeHV2D(front: np.ndarray):#, ref: List[float]):
-    """
-    Compute the Hypervolume for the pareto front  (only implement it for 2D)
-    :param front: (n_points, m_cost_values) array for which to compute the volume
-    :param ref: coordinates of the reference point
-    :returns: Hypervolume of the polygon spanned by all points in the front + the reference point
-    """
-    ref = [1,1]
-    front = np.asarray(front)
-    assert front.ndim == 2
-    assert len(ref) == 2
-
-    # We assume all points already sorted
-    list_ = [ref]
-    for x in front:
-        elem_at = len(list_) - 1
-        list_.append([list_[elem_at][0], x[1]])  # add intersection points by keeping the x constant
-        list_.append(x)
-    list_.append([list_[-1][0], list_[0][1]])
-    sorted_front = np.array(list_)
-
-    def shoelace(x_y):  # taken from https://stackoverflow.com/a/58515054
-        x_y = np.array(x_y)
-        x_y = x_y.reshape(-1, 2)
-
-        x = x_y[:, 0]
-        y = x_y[:, 1]
-
-        S1 = np.sum(x * np.roll(y, -1))
-        S2 = np.sum(y * np.roll(x, -1))
-
-        area = .5 * np.absolute(S1 - S2)
-
-        return area
-
-    return shoelace(sorted_front)
+# Not using it, using pygmo
+# def computeHV2D(front: np.ndarray):#, ref: List[float]):
+#     """
+#     Compute the Hypervolume for the pareto front  (only implement it for 2D)
+#     :param front: (n_points, m_cost_values) array for which to compute the volume
+#     :param ref: coordinates of the reference point
+#     :returns: Hypervolume of the polygon spanned by all points in the front + the reference point
+#     """
+#     ref = [1,1]
+#     front = np.asarray(front)
+#     assert front.ndim == 2
+#     assert len(ref) == 2
+#
+#     # We assume all points already sorted
+#     list_ = [ref]
+#     for x in front:
+#         elem_at = len(list_) - 1
+#         list_.append([list_[elem_at][0], x[1]])  # add intersection points by keeping the x constant
+#         list_.append(x)
+#     list_.append([list_[-1][0], list_[0][1]])
+#     sorted_front = np.array(list_)
+#
+#     def shoelace(x_y):  # taken from https://stackoverflow.com/a/58515054
+#         x_y = np.array(x_y)
+#         x_y = x_y.reshape(-1, 2)
+#
+#         x = x_y[:, 0]
+#         y = x_y[:, 1]
+#
+#         S1 = np.sum(x * np.roll(y, -1))
+#         S2 = np.sum(y * np.roll(x, -1))
+#
+#         area = .5 * np.absolute(S1 - S2)
+#
+#         return area
+#
+#     return shoelace(sorted_front)

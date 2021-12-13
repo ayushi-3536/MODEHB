@@ -112,31 +112,15 @@ class MODEHB(DEHB):
             fit.extend(self.de[budget].fitness.tolist())
         return pop,fit
 
-    def _update_pareto(self, fitness, config):
+    def _update_pareto(self):
         """ Concatenates all subpopulations
         """
-        name = time.strftime("%x %X %Z", time.localtime(self.start))
-        budgets = list(self.budgets)
-        #Todo: maintain pop and fitness together in a class
-        pop = self.pareto_pop
-        fit = self.pareto_fit
-        pop.append(config)
-        fit.append(fitness)
-        a, index_return_list = self._get_pareto(fit)
-        self.pareto_pop = [pop[int(m)] for m in index_return_list]
-        logger.debug("pop before:{}",self.pareto_pop)
-        self.pareto_fit = [fit[int(m)] for m in index_return_list]
+
         fitness = np.array([[x[0], x[1]] for x in self.pareto_fit])
         contributions = pareto.computeHV3D(fitness,self.ref_point)
         contributions_index = np.argsort(contributions)
         contributions_index = contributions_index[::-1]
         self.best_pareto_config = [self.pareto_pop[int(m)] for m in contributions_index]
-        configs = [self.de[budgets[0]].boundary_check(config) for config in self.pareto_pop]
-        logger.debug("configs:{}",configs)
-        self.pareto_configs = [self.vector_to_configspace(individual) for individual in configs]
-        logger.debug("contri index:{}, contri:{}", contributions_index, contributions)
-        logger.debug("pareto fit:{}", self.pareto_fit)
-        # dump pareto every 10th evaluation
 
         if (self.count_eval % self.log_interval == 0):
             with open(os.path.join(self.output_path, "pareto_fit_{}.txt".format(time.time())), 'w') as f:
@@ -338,9 +322,14 @@ class MODEHB(DEHB):
         index_list = np.array(list(range(len(fit))))
         logger.debug("fitness:{}",fitness)
         logger.debug("index_list:{}",index_list)
-        fronts, index_return_list = pareto.nDS_index_front(np.array(fitness), index_list)
+        fronts, index_return_list = pareto.nDS_all_index_front(np.array(fitness), index_list)
+
         logger.debug("fronts:{}",fronts)
         logger.debug("fronts index:{}",index_return_list)
+        self.pareto_pop = [pop[i] for i in index_return_list[0]]
+        self.pareto_fit = [fit[i] for i in index_return_list[0]]
+        logger.debug("pareto pop:{}",self.pareto_pop)
+        logger.debug("pareto fit:{}",self.pareto_fit)
         for idx, front_index in enumerate(index_return_list):
             front_index = front_index
             if curr_idx not in front_index and parent_idx not in front_index:
