@@ -361,7 +361,7 @@ class MODEHB(DEHB):
                 return False
 
     def _save_incumbent(self, fitness, config, name=None):
-        self._update_pareto(fitness, config)
+        self._update_pareto()
 
     def _update_trackers(self, runtime, history):
         self.runtime.append(runtime)
@@ -427,7 +427,7 @@ class MODEHB(DEHB):
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
                 logger.debug("modifies budget configs:{}", configs)
                 self.de[budget].fitness[parent_id] = np.array(fitness)
-                self._update_pareto(fitness, config)
+                self._update_pareto()
             # if self.check_fitness(fitness, parent_id, self.de[budget].fitness):
             #     self.de[budget].population[parent_id] = config
             #     logger.debug("config in parents place :{}", self.vector_to_configspace(config))
