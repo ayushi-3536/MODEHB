@@ -106,9 +106,11 @@ class MODEHB(DEHB):
         if exclude_budget is not None:
             budgets.remove(exclude_budget)
         pop = []
+        fit = []
         for budget in budgets:
             pop.extend(self.de[budget].population.tolist())
-        return pop
+            fit.extend(self.de[budget].fitness.tolist())
+        return pop,fit
 
     def _update_pareto(self, fitness, config):
         """ Concatenates all subpopulations
@@ -273,21 +275,71 @@ class MODEHB(DEHB):
         logger.debug("config after cross over:{}", self.vector_to_configspace(config))
         return config, parent_id
 
-    # This function checks the fitness of parent and evaluated config and replace parent only if its fitness(evaluated by NDS and hypervolume)
-    # is greater than the parent
-    def check_fitness(self, current_fitness, parent_idx, pop_fitnesses):
-        fitnesses = pop_fitnesses.copy()
-        fitnesses = np.append(fitnesses, [current_fitness], axis=0)
-        curr_idx = len(fitnesses) - 1
-        fitness = np.array([[x[0], x[1]] for x in fitnesses])
-        index_list = np.array(list(range(len(fitnesses))))
+    # ''' This function checks the fitness of parent and evaluated config and replace parent only if its fitness(evaluated by NDS and hypervolume)
+    #     is greater than the parent '''
+    # def check_fitness(self, current_fitness, parent_idx, pop_fitnesses):
+    #     fitnesses = pop_fitnesses.copy()
+    #     logger.debug("parent_idx:{}",parent_idx)
+    #     logger.debug("pop_fitnesses:{}",pop_fitnesses)
+    #     logger.debug("curr fit:{}",current_fitness)
+    #     fitnesses = np.append(fitnesses, [current_fitness], axis=0)
+    #     curr_idx = len(fitnesses) - 1
+    #     fitness = np.array([[x[0], x[1]] for x in fitnesses])
+    #     index_list = np.array(list(range(len(fitnesses))))
+    #     fronts, index_return_list = pareto.nDS_index_front(np.array(fitness), index_list)
+    #     for idx, front_index in enumerate(index_return_list):
+    #         front_index = front_index
+    #         if curr_idx not in front_index and parent_idx not in front_index:
+    #             continue
+    #         if curr_idx in front_index and parent_idx in front_index:
+    #             contributions = pareto.computeHV3D(fronts[idx],self.ref_point)
+    #             front_curr_index = np.where(front_index == curr_idx)[0][0]
+    #             front_parent_index = np.where(front_index == parent_idx)[0][0]
+    #             hv_parent = contributions[front_parent_index]
+    #             hv_curr = contributions[front_curr_index]
+    #             logger.debug("hv contri parent:{}, hv contri child:{}", hv_parent, hv_curr)
+    #             if (hv_parent < hv_curr):
+    #                 logger.debug("choosing current:{}", current_fitness)
+    #                 return True
+    #             logger.debug("choosing parent")
+    #             return False
+    #
+    #         elif curr_idx in front_index and parent_idx not in front_index:
+    #             logger.debug("chhose child from front first")
+    #             return True
+    #         else:
+    #             logger.debug("chhose parent from front first")
+    #             return False
+
+    ''' This function checks the fitness of parent and evaluated config and replace parent only if its fitness(evaluated by NDS and hypervolume)
+            is greater than the parent '''
+
+    def check_fitness(self, current_fitness, parent_fitness,budget,parent_id):
+        pop, fit = self._concat_all_budget_pop()
+        target = self.de[budget].population[parent_id]
+        logger.debug("all population fitness:{}", fit)
+        logger.debug("parent_fitness:{}", parent_fitness)
+        logger.debug("curr fitness:{}", current_fitness)
+        logger.debug("target:{}",target)
+        logger.debug("pop:{}",pop)
+        fit.extend(current_fitness)
+        curr_idx = len(fit)-1
+        parent_idx = pop.index(target)
+        logger.debuf("parent idx:{}",parent_idx)
+
+        fitness = np.array([[x[0], x[1]] for x in fit])
+        index_list = np.array(list(range(len(fit))))
+        logger.debug("fitness:{}",fitness)
+        logger.debug("index_list:{}",index_list)
         fronts, index_return_list = pareto.nDS_index_front(np.array(fitness), index_list)
+        logger.debug("fronts:{}",fronts)
+        logger.debug("fronts index:{}",index_return_list)
         for idx, front_index in enumerate(index_return_list):
             front_index = front_index
             if curr_idx not in front_index and parent_idx not in front_index:
                 continue
             if curr_idx in front_index and parent_idx in front_index:
-                contributions = pareto.computeHV3D(fronts[idx],self.ref_point)
+                contributions = pareto.computeHV3D(fronts[idx], self.ref_point)
                 front_curr_index = np.where(front_index == curr_idx)[0][0]
                 front_parent_index = np.where(front_index == parent_idx)[0][0]
                 hv_parent = contributions[front_parent_index]
@@ -364,14 +416,23 @@ class MODEHB(DEHB):
                     bracket.complete_job(budget)  # IMPORTANT to perform synchronous SH
 
             # carry out DE selection
-            logger.debug("fitness :{},parent_id:{},budget fitness{}", fitness, parent_id, self.de[budget].fitness)
-            if self.check_fitness(fitness, parent_id, self.de[budget].fitness):
+            parent_fitness = self.de[budget].fitness[parent_id]
+            logger.debug("budget:{}, parent id:{}",budget, parent_id)
+            logger.debug("fitness :{},parent fitness{}", fitness, parent_fitness)
+            if self.check_fitness(fitness, parent_fitness):
                 self.de[budget].population[parent_id] = config
                 logger.debug("config in parents place :{}", self.vector_to_configspace(config))
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
                 logger.debug("modifies budget configs:{}", configs)
                 self.de[budget].fitness[parent_id] = np.array(fitness)
                 self._update_pareto(fitness, config)
+            # if self.check_fitness(fitness, parent_id, self.de[budget].fitness):
+            #     self.de[budget].population[parent_id] = config
+            #     logger.debug("config in parents place :{}", self.vector_to_configspace(config))
+            #     configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
+            #     logger.debug("modifies budget configs:{}", configs)
+            #     self.de[budget].fitness[parent_id] = np.array(fitness)
+            #     self._update_pareto(fitness, config)
             #this just writes all the fitness of the runs till now
             if self.history is not None and self.count_eval % 10000 == 0:
                 logger.debug("history {}", self.history)
