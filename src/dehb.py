@@ -77,9 +77,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--path', default='results_msehvi', type=str, help='Timeout in sec. 0 -> no timeout')
 args = parser.parse_args()
 extension = 'txt'
+args.path = os.getcwd()+'/flower/'+args.path
 os.chdir(args.path)
 result = glob.glob('*.{}'.format(extension))
 print(result)
+
 #reg_hv,times,f_pf_modehb = graph(path,result)
 #r = [np.loadtxt(path + '\\' + f) for f in result]
 for idx,f in enumerate(result):
