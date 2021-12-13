@@ -249,7 +249,7 @@ class MODEHB(DEHB):
             mutation_pop = np.concatenate((mutation_pop, new_pop))
 
         mutant = self.de[budget].mutation(
-            current=target, alt_pop=mutation_pop, seed=seed
+            current=target, alt_pop=mutation_pop
         )
         logger.debug("mutant is :{}, target is :{}", mutant, target)
         # perform crossover with selected parent
