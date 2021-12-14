@@ -365,6 +365,7 @@ class MODEHB(DEHB):
                              parent_id,self.de[budget].fitness[parent_id],current_fitness)
                 self.de[budget].population[parent_id] = config
                 self.de[budget].fitness[parent_id] = np.array(current_fitness)
+                return
 
             elif curr_idx in front_index and parent_idx not in front_index:
                 ''' Updating the population by replacing parent with child
@@ -375,6 +376,10 @@ class MODEHB(DEHB):
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
                 logger.debug("modifies budget configs:{}", configs)
                 self.de[budget].fitness[parent_id] = np.array(current_fitness)
+                return
+            else:
+                logger.debug("choose parent")
+                return
 
 
 
