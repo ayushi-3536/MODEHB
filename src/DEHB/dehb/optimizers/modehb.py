@@ -489,7 +489,36 @@ class MODEHB(DEHB):
 
         # remove processed future
         self.futures = np.delete(self.futures, [i for i, _ in done_list]).tolist()
+    def _f_objective(self, job_info):
+        """ Wrapper to call DE's objective function.
+        """
+        # check if job_info appended during job submission self.submit_job() includes "gpu_devices"
+        if "gpu_devices" in job_info and self.single_node_with_gpus:
+            # should set the environment variable for the spawned worker process
+            # reprioritising a CUDA device order specific to this worker process
+            os.environ.update({"CUDA_VISIBLE_DEVICES": job_info["gpu_devices"]})
 
+        config, budget, parent_id = job_info['config'], job_info['budget'], job_info['parent_id']
+        bracket_id = job_info['bracket_id']
+        kwargs = job_info["kwargs"]
+        res = self.de[budget].f_objective(config, budget, **kwargs)
+        info = res["info"] if "info" in res else dict()
+        run_info = {
+            'fitness': res["fitness"],
+            'cost': res["cost"],
+            'config': config,
+            'budget': budget,
+            'parent_id': parent_id,
+            'bracket_id': bracket_id,
+            'global_parent_id': job_info['global_parent_id'],
+            'info': info
+        }
+
+        if "gpu_devices" in job_info:
+            # important for GPU usage tracking if single_node_with_gpus=True
+            device_id = int(job_info["gpu_devices"].strip().split(",")[0])
+            run_info.update({"device_id": device_id})
+        return run_info
     @logger.catch
     def run(self, total_cost=28800, fevals=None, brackets=None, single_node_with_gpus=False,
             verbose=True, debug=False, save_intermediate=True, save_history=True, **kwargs):
