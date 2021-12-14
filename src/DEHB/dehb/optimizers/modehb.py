@@ -132,8 +132,13 @@ class MODEHB(DEHB):
         fitness = np.array([[x[0], x[1]] for x in fit])
         is_pareto = pareto.pareto(fitness)
         logger.debug("is pareto :{}",is_pareto)
+        logger.debug("pop:{}",pop)
+        pop = np.array(pop)
+        fit = np.array(fit)
+        self.pareto_fit = fit[is_pareto, :]
+        logger.debug("fit:{}",self.pareto_fit)
         self.pareto_pop = pop[is_pareto,:]
-        self.pareto_fit = fit[is_pareto,:]
+
         logger.debug("pareto pop :{}",self.pareto_pop)
         logger.debug("pareto fit:{}",self.pareto_fit)
         fitness = np.array([[x[0], x[1]] for x in self.pareto_fit])
