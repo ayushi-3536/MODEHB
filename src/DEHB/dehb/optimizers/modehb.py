@@ -119,9 +119,12 @@ class MODEHB(DEHB):
             """ Concatenates all subpopulations
             """
             budgets = list(self.budgets)
+            logger.debug("finding budget and parent id for global pop id:{}",p_id)
             for budget in budgets:
                 for idx,g_pid in enumerate(range(len(self.de[budget].global_parent_id))):
-                  if(g_pid == p_id):
+                    logger.debug("pop id:{}", g_pid)
+                    if(g_pid == p_id):
+                      logger.debug("found budget:{}, parent id :{}:{}",idx)
                       return budget,idx
 
 
@@ -355,13 +358,14 @@ class MODEHB(DEHB):
                 if(idx == curr_idx):
                     logger.debug("worst candidate with idx:{} is current index, not replacing any config",idx)
                     return
-                budget,parent_id = self._get_info_by_global_parent_id(idx)
+                budget, parent_id = self._get_info_by_global_parent_id(idx)
                 logger.debug("global idx:{},budget:{},parentid:{}",idx,budget,parent_id)
-                self.de[budget].population[parent_id] = config
-                self.de[budget].fitness[parent_id] = np.array(current_fitness)
                 logger.debug("replacing config from budget:{} and parent_id:{} "
                              "with least hv contribution and fitness:{} with config with fitness:{}",budget,
                              parent_id,self.de[budget].fitness[parent_id],current_fitness)
+                self.de[budget].population[parent_id] = config
+                self.de[budget].fitness[parent_id] = np.array(current_fitness)
+
             elif curr_idx in front_index and parent_idx not in front_index:
                 ''' Updating the population by replacing parent with child
                 '''
@@ -371,8 +375,7 @@ class MODEHB(DEHB):
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
                 logger.debug("modifies budget configs:{}", configs)
                 self.de[budget].fitness[parent_id] = np.array(current_fitness)
-            else:
-                logger.debug("chhose parent from front first")
+
 
 
     def _get_next_job(self):
