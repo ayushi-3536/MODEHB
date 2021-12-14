@@ -17,7 +17,7 @@ def computeHV3D(costs,ref_point= [1,1]):
 
 def minHV3D(costs,ref_point= [1,1]):
     hv = hypervolume(costs)
-    return hv.least_contributor(r=ref_point)
+    return hv.least_contributor(ref_point)
 
 
 def maxHV3D(costs,ref_point= [1,1]):

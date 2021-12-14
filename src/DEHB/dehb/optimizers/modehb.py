@@ -350,7 +350,8 @@ class MODEHB(DEHB):
                 continue
             if curr_idx in front_index and parent_idx in front_index:
                 logger.debug("parent and child both in front first, replacing the worst contributor of concat pop with the config")
-                idx = pareto.minHV3D(fit, self.ref_point)
+                fitness = np.array([[x[0], x[1]] for x in self.pareto_fit])
+                idx = pareto.minHV3D(fitness, self.ref_point)
                 budget,parent_id = self._get_info_by_global_parent_id(idx)
                 self.de[budget].population[parent_id] = config
                 self.de[budget].fitness[parent_id] = np.array(current_fitness)
