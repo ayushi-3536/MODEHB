@@ -359,7 +359,7 @@ class MODEHB(DEHB):
                 logger.debug("config in parents place :{}", self.vector_to_configspace(config))
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
                 logger.debug("modifies budget configs:{}", configs)
-                self.de[budget].fitness[parent_id] = np.array(fitness)
+                self.de[budget].fitness[parent_id] = np.array(current_fitness)
             else:
                 '''Not updating the population
                 '''
