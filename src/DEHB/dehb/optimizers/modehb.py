@@ -124,7 +124,7 @@ class MODEHB(DEHB):
                 for idx,g_pid in enumerate(range(len(self.de[budget].global_parent_id))):
                     logger.debug("pop id:{}", g_pid)
                     if(g_pid == p_id):
-                      logger.debug("found budget:{}, parent id :{}:{}",idx)
+                      logger.debug("found budget:{}, parent id :{}",budget,idx)
                       return budget,idx
 
 
