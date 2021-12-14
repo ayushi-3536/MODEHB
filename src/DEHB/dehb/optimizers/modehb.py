@@ -350,9 +350,13 @@ class MODEHB(DEHB):
                 continue
             if curr_idx in front_index and parent_idx in front_index:
                 logger.debug("parent and child both in front first, replacing the worst contributor of concat pop with the config")
-                fitness = np.array([[x[0], x[1]] for x in self.pareto_fit])
+
                 idx = pareto.minHV3D(fitness, self.ref_point)
+                if(idx == curr_idx):
+                    logger.debug("worst candidate with idx:{} is current index, not replacing any config",idx)
+                    return
                 budget,parent_id = self._get_info_by_global_parent_id(idx)
+                logger.debug("global idx:{},budget:{},parentid:{}",idx,budget,parent_id)
                 self.de[budget].population[parent_id] = config
                 self.de[budget].fitness[parent_id] = np.array(current_fitness)
                 logger.debug("replacing config from budget:{} and parent_id:{} "
@@ -368,8 +372,6 @@ class MODEHB(DEHB):
                 logger.debug("modifies budget configs:{}", configs)
                 self.de[budget].fitness[parent_id] = np.array(current_fitness)
             else:
-                '''Not updating the population
-                '''
                 logger.debug("chhose parent from front first")
 
 
