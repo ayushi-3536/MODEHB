@@ -76,7 +76,7 @@ class MODEHB(DEHB):
             #To-Do:make it extensible to multiple objectives
             self.de[b].fitness = np.array([[np.inf, np.inf]] * self._max_pop_size[b])
             logger.debug("init pop size:{}, pop obtained:{}", self._max_pop_size[b], self.de[b].population)
-            self.de[b].global_parent_id = np.array([pop_count + counter for counter in self._max_pop_size[b]])
+            self.de[b].global_parent_id = np.array([pop_count + counter for counter in range(self._max_pop_size[b])])
             logger.debug("global parent id:{}", self.de[b].global_parent_id)
             # adding attributes to DEHB objects to allow communication across subpopulations
             self.de[b].parent_counter = 0
