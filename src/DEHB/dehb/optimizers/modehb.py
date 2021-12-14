@@ -311,6 +311,7 @@ class MODEHB(DEHB):
         pop.extend([config])
         curr_idx = len(fit)-1
         parent_idx = global_parent_id
+        logger.debug("parent idx:{}",parent_idx)
         fitness = np.array([[x[0], x[1]] for x in fit])
         index_list = np.array(list(range(len(fit))))
         logger.debug("fitness:{}",fitness)
