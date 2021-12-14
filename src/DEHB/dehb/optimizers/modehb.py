@@ -114,10 +114,26 @@ class MODEHB(DEHB):
             fit.extend(self.de[budget].fitness.tolist())
         return pop,fit
 
+    def _get_info_by_global_parent_id(self,p_id):
+            """ Concatenates all subpopulations
+            """
+            budgets = list(self.budgets)
+            for budget in budgets:
+                for idx,g_pid in enumerate(range(len(self.de[budget].global_parent_id))):
+                  if(g_pid == p_id):
+                      return budget,idx
+
+
     def _update_pareto(self):
         """ Concatenates all subpopulations
         """
-
+        pop, fit = self._concat_all_budget_pop()
+        fitness = np.array([[x[0], x[1]] for x in fit])
+        is_pareto = pareto.pareto(fitness)
+        self.pareto_pop = pop[is_pareto]
+        self.pareto_fit = fit[is_pareto]
+        logger.debug("pareto pop :{}",self.pareto_pop)
+        logger.debug("pareto fit:{}",self.pareto_fit)
         fitness = np.array([[x[0], x[1]] for x in self.pareto_fit])
         contributions = pareto.computeHV3D(fitness,self.ref_point)
         contributions_index = np.argsort(contributions)
@@ -326,32 +342,28 @@ class MODEHB(DEHB):
             if curr_idx not in front_index and parent_idx not in front_index:
                 continue
             if curr_idx in front_index and parent_idx in front_index:
-                contributions = pareto.computeHV3D(fronts[idx], self.ref_point)
-                front_curr_index = np.where(front_index == curr_idx)[0][0]
-                front_parent_index = np.where(front_index == parent_idx)[0][0]
-                hv_parent = contributions[front_parent_index]
-                hv_curr = contributions[front_curr_index]
-                logger.debug("hv contri parent:{}, hv contri child:{}", hv_parent, hv_curr)
-                if (hv_parent < hv_curr):
-                    logger.debug("choosing current:{} and updating pareto ", current_fitness)
-                    self.pareto_pop = [pop[i] for i in index_return_list[0]]
-                    self.pareto_fit = [fit[i] for i in index_return_list[0]]
-                    logger.debug("pareto pop:{}", self.pareto_pop)
-                    logger.debug("pareto fit:{}", self.pareto_fit)
-                    return True
-                logger.debug("choosing parent")
-                return False
-
+                logger.debug("parent and child both in front first, replacing the worst contributor of concat pop with the config")
+                idx = pareto.minHV3D(fit, self.ref_point)
+                budget,parent_id = self._get_info_by_global_parent_id(idx)
+                self.de[budget].population[parent_id] = config
+                self.de[budget].fitness[parent_id] = np.array(current_fitness)
+                logger.debug("replacing config from budget:{} and parent_id:{} "
+                             "with least hv contribution and fitness:{} with config with fitness:{}",budget,
+                             parent_id,self.de[budget].fitness[parent_id],current_fitness)
             elif curr_idx in front_index and parent_idx not in front_index:
+                ''' Updating the population by replacing parent with child
+                '''
                 logger.debug("chhose child from front first")
-                self.pareto_pop = [pop[i] for i in index_return_list[0]]
-                self.pareto_fit = [fit[i] for i in index_return_list[0]]
-                logger.debug("pareto pop:{}", self.pareto_pop)
-                logger.debug("pareto fit:{}", self.pareto_fit)
-                return True
+                self.de[budget].population[parent_id] = config
+                logger.debug("config in parents place :{}", self.vector_to_configspace(config))
+                configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
+                logger.debug("modifies budget configs:{}", configs)
+                self.de[budget].fitness[parent_id] = np.array(fitness)
             else:
+                '''Not updating the population
+                '''
                 logger.debug("chhose parent from front first")
-                return False
+
 
     def _get_next_job(self):
         """ Loads a configuration and budget to be evaluated next by a free worker
@@ -449,13 +461,15 @@ class MODEHB(DEHB):
             parent_fitness = self.de[budget].fitness[parent_id]
             logger.debug("budget:{}, parent id:{}",budget, parent_id)
             logger.debug("fitness :{},parent fitness{}", fitness, parent_fitness)
-            if self.check_fitness(fitness, parent_fitness,global_parent_id,parent_id,budget,config):
-                self.de[budget].population[parent_id] = config
-                logger.debug("config in parents place :{}", self.vector_to_configspace(config))
-                configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
-                logger.debug("modifies budget configs:{}", configs)
-                self.de[budget].fitness[parent_id] = np.array(fitness)
-                self._update_pareto()
+            self.check_fitness(fitness, parent_fitness,global_parent_id,parent_id,budget,config)
+            self._update_pareto()
+                # self.de[budget].population[parent_id] = config
+                # logger.debug("config in parents place :{}", self.vector_to_configspace(config))
+                # configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
+                # logger.debug("modifies budget configs:{}", configs)
+                # self.de[budget].fitness[parent_id] = np.array(fitness)
+
+
             # if self.check_fitness(fitness, parent_id, self.de[budget].fitness):
             #     self.de[budget].population[parent_id] = config
             #     logger.debug("config in parents place :{}", self.vector_to_configspace(config))
