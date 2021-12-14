@@ -131,8 +131,9 @@ class MODEHB(DEHB):
         pop, fit = self._concat_all_budget_pop()
         fitness = np.array([[x[0], x[1]] for x in fit])
         is_pareto = pareto.pareto(fitness)
-        self.pareto_pop = pop[is_pareto]
-        self.pareto_fit = fit[is_pareto]
+        logger.debug("is pareto :{}",is_pareto)
+        self.pareto_pop = pop[is_pareto,:]
+        self.pareto_fit = fit[is_pareto,:]
         logger.debug("pareto pop :{}",self.pareto_pop)
         logger.debug("pareto fit:{}",self.pareto_fit)
         fitness = np.array([[x[0], x[1]] for x in self.pareto_fit])
