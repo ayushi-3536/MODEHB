@@ -68,6 +68,7 @@ class MODEHB(DEHB):
         """
         logger.info("creating MOSyncDE pop")
         self.de = {}
+        pop_count = 0
         for i, b in enumerate(self._max_pop_size.keys()):
             self.de[b] = MoAsyncDE(**self.de_params, budget=b, pop_size=self._max_pop_size[b],
                                    output_path=self.output_path, seed=seed + i)
@@ -75,12 +76,13 @@ class MODEHB(DEHB):
             #To-Do:make it extensible to multiple objectives
             self.de[b].fitness = np.array([[np.inf, np.inf]] * self._max_pop_size[b])
             logger.debug("init pop size:{}, pop obtained:{}", self._max_pop_size[b], self.de[b].population)
-
+            self.de[b].global_parent_id = np.array([pop_count + counter for counter in self._max_pop_size[b]])
+            logger.debug("global parent id:{}", self.de[b].global_parent_id)
             # adding attributes to DEHB objects to allow communication across subpopulations
             self.de[b].parent_counter = 0
             self.de[b].promotion_pop = None
             self.de[b].promotion_fitness = None
-
+            pop_count = self._max_pop_size[b]
     def _get_pareto(self, population_fitness):
         index_list = np.array(list(range(len(population_fitness))))
         fitness = np.array([[x[0], x[1]] for x in population_fitness])
@@ -297,7 +299,7 @@ class MODEHB(DEHB):
     ''' This function checks the fitness of parent and evaluated config and replace parent only if its fitness(evaluated by NDS and hypervolume)
             is greater than the parent '''
 
-    def check_fitness(self, current_fitness, parent_fitness,budget,parent_id,config):
+    def check_fitness(self, current_fitness, parent_fitness, global_parent_id, parent_id,budget, config):
         pop, fit = self._concat_all_budget_pop()
         target = self.de[budget].population[parent_id]
         logger.debug("all population fitness:{}", fit)
@@ -308,17 +310,7 @@ class MODEHB(DEHB):
         fit.extend([current_fitness])
         pop.extend([config])
         curr_idx = len(fit)-1
-        #parent_idx = pop.tolist().index(target)
-        parent_idx = np.any(np.all(target == pop, axis=1))
-        for i,p in enumerate(pop):
-            if np.all(target == p):
-                logger.debug("assgn index:{}",i)
-                parent_idx = i
-                break;
-            logger.debug("skipping")
-        logger.debug("parent idx:{}",parent_idx)
-
-
+        parent_idx = global_parent_id
         fitness = np.array([[x[0], x[1]] for x in fit])
         index_list = np.array(list(range(len(fit))))
         logger.debug("fitness:{}",fitness)
@@ -360,6 +352,40 @@ class MODEHB(DEHB):
                 logger.debug("chhose parent from front first")
                 return False
 
+    def _get_next_job(self):
+        """ Loads a configuration and budget to be evaluated next by a free worker
+        """
+        bracket = None
+        if len(self.active_brackets) == 0 or \
+                np.all([bracket.is_bracket_done() for bracket in self.active_brackets]):
+            # start new bracket when no pending jobs from existing brackets or empty bracket list
+            bracket = self._start_new_bracket()
+        else:
+            for _bracket in self.active_brackets:
+                # check if _bracket is not waiting for previous rung results of same bracket
+                # _bracket is not waiting on the last rung results
+                # these 2 checks allow DEHB to have a "synchronous" Successive Halving
+                if not _bracket.previous_rung_waits() and _bracket.is_pending():
+                    # bracket eligible for job scheduling
+                    bracket = _bracket
+                    break
+            if bracket is None:
+                # start new bracket when existing list has all waiting brackets
+                bracket = self._start_new_bracket()
+        # budget that the SH bracket allots
+        budget = bracket.get_next_job_budget()
+        config, parent_id = self._acquire_config(bracket, budget)
+        global_parent_id = self.de[budget].global_parent_id[parent_id]
+
+        # notifies the Bracket Manager that a single config is to run for the budget chosen
+        job_info = {
+            "config": config,
+            "budget": budget,
+            "parent_id": parent_id,
+            "global_parent_id": global_parent_id,
+            "bracket_id": bracket.bracket_id
+        }
+        return job_info
     def _save_incumbent(self, fitness, config, name=None):
         self._update_pareto()
 
@@ -412,6 +438,7 @@ class MODEHB(DEHB):
             budget, parent_id = run_info["budget"], run_info["parent_id"]
             config = run_info["config"]
             bracket_id = run_info["bracket_id"]
+            global_parent_id = run_info["global_parent_id"]
             for bracket in self.active_brackets:
                 if bracket.bracket_id == bracket_id:
                     # bracket job complete
@@ -421,7 +448,7 @@ class MODEHB(DEHB):
             parent_fitness = self.de[budget].fitness[parent_id]
             logger.debug("budget:{}, parent id:{}",budget, parent_id)
             logger.debug("fitness :{},parent fitness{}", fitness, parent_fitness)
-            if self.check_fitness(fitness, parent_fitness,budget,parent_id,config):
+            if self.check_fitness(fitness, parent_fitness,global_parent_id,parent_id,budget,config):
                 self.de[budget].population[parent_id] = config
                 logger.debug("config in parents place :{}", self.vector_to_configspace(config))
                 configs = [self.vector_to_configspace(config) for config in self.de[budget].population]
