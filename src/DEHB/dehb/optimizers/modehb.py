@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 import sys
 import time
 import numpy as np
@@ -626,6 +627,7 @@ class MODEHB(DEHB):
         except(KeyboardInterrupt, Exception) as err:
             logger.error("exception caught:{}",err)
             self.save_results()
+            traceback.print_exc()
             return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
             raise
 
