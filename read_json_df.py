@@ -8,6 +8,15 @@ import torch
 from botorch.utils.multi_objective.hypervolume import Hypervolume
 from botorch.utils.multi_objective.pareto import is_non_dominated
 import tqdm
+from loguru import logger
+import sys
+
+logger.configure(handlers=[{"sink": sys.stdout, "level": "DEBUG"}])
+_logger_props = {
+    "format": "{time} {level} {message}",
+    "enqueue": True,
+    "rotation": "500 MB"
+}
 def load_json_file(path,spath,idx):
     # Opening JSON file
     f = open(path)
@@ -57,13 +66,13 @@ print(result)
 for idx,f in enumerate(result):
     df = pd.read_json(path, lines=True)
     data = np.array(-df['acc'])
-
+    logger.info("accuracy data:{}",data)
     data = np.vstack((data, np.array(-df['num_params'])))
-    # print(data)
-    print(data.shape)
+    logger.info("data for numparam:{}",data)
+    logger.info("shape of the data:{}",data.shape)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     data = torch.tensor(np.ascontiguousarray(np.asarray(data).T), device=device).float()
-    print("data:{}", data)
+    logger.info("complete data:{}", data)
     time = np.array(df['cost'])
     print("time:{}", time.shape)
     # print("data:{}",data)
