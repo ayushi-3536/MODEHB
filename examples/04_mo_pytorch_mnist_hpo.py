@@ -295,7 +295,7 @@ def main():
     # DEHB optimisation block #
     ###########################
     np.random.seed(args.seed)
-    modehb = MODEHB(f=objective_function, cs=cs, dimensions=dimensions, min_budget=args.min_budget,
+    modehb = MODEHB(objective_function=objective_function, cs=cs, dimensions=dimensions, min_budget=args.min_budget,
                     max_budget=args.max_budget, eta=args.eta, output_path=args.output_path,
                     ref_point=[1,8], mo_strategy=args.mo_strategy,
                     # if client is not None and of type Client, n_workers is ignored
