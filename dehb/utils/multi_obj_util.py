@@ -68,23 +68,21 @@ def get_eps_net_ranking(costs, index_list):
     return ranked_ids
 
 
-def contributionsHV3D(costs, ref_point= [1, 1]):
+
+def minHV3D(costs, ref_point=[1, 1]):
     hv = hypervolume(costs)
-    return hv.contributions(ref_point)
-
-def minHV3D(costs,ref_point= [1,1]):
-    hv = hypervolume(costs)
-    return hv.least_contributor(ref_point)
-
-
-def maxHV3D(costs,ref_point= [1,1]):
-    hv = hypervolume(costs)
-    return hv.greatest_contributor(ref_point)
-
-def computeHV(costs, ref_point = [1, 1]):
-    hv = hypervolume(costs)
-    return hv.compute(ref_point)
-
+    print(costs)
+    max_values = np.max(costs, axis=0)
+    reference_point = np.maximum(
+        np.maximum(
+            1.1 * max_values,  # case: value > 0
+            0.9 * max_values  # case: value < 0
+        ),
+        np.full(len(max_values), sys.float_info.epsilon))
+    if np.all((np.array(reference_point) == 0.0)):
+        reference_point = np.full(len(max_values), sys.float_info.epsilon)
+    logger.debug("curr reference point:{}", reference_point)
+    return hv.least_contributor(reference_point)
 
 
 

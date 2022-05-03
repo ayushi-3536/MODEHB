@@ -37,6 +37,7 @@ class MODEHB(DEHB):
                  boundary_fix_type='random',
                  max_age=np.inf,
                  n_workers=None,
+                 num_objectives=2,
                  log_interval=100,
                  **kwargs):
         super().__init__(cs=cs, f=objective_function, dimensions=dimensions, mutation_factor=mutation_factor,
@@ -49,9 +50,8 @@ class MODEHB(DEHB):
         self.output_path = output_path
         self.mo_strategy = mo_strategy
         self.count_eval = 0
-        self.ref_point = kwargs['ref_point']
         self.log_interval = log_interval
-        self.initial_fitness_threshold = 0.001
+        self.num_objectives = num_objectives
 
     def _init_subpop(self):
         """ List of DE objects corresponding to the budgets (fidelities)
@@ -59,13 +59,11 @@ class MODEHB(DEHB):
         logger.info("creating MOSyncDE pop")
         self.de = {}
         pop_count = 0
-        logger.debug("ref point :{}", self.ref_point)
         for i, b in enumerate(self._max_pop_size.keys()):
             logger.debug("max pop size:{}", self._max_pop_size[b])
             self.de[b] = AsyncDE(**self.de_params, budget=b, pop_size=self._max_pop_size[b])
             self.de[b].population = self.de[b].init_population(pop_size=self._max_pop_size[b])
-            self.de[b].fitness = np.array([np.array(self.ref_point) - self.initial_fitness_threshold]
-                                          * self._max_pop_size[b])
+            self.de[b].fitness = np.array([np.full(self.num_objective, np.inf).tolist()] * self._max_pop_size[b])
             logger.debug("init pop size:{}, pop fit obtained:{}", self._max_pop_size[b], self.de[b].fitness)
             self.de[b].global_parent_id = np.array([pop_count + counter for counter in range(self._max_pop_size[b])])
             logger.debug("global parent id:{}", self.de[b].global_parent_id)
@@ -92,16 +90,6 @@ class MODEHB(DEHB):
     def _select_best_config_epsnet(self, population_fitness):
         index_list = np.array(range(len(population_fitness)))
         return multi_obj_util.get_eps_net_ranking(population_fitness, index_list)
-
-    def _select_best_hv(self, population_fitness):
-        fronts, index_return_list = self._get_paretos(population_fitness)
-        sorted = []
-        for idx, front in enumerate(fronts):
-            hv = np.array(multi_obj_util.contributionsHV3D(front, self.ref_point))
-            sort_index = np.argsort(-1 * hv)
-            indexes = index_return_list[idx]
-            sorted.extend(indexes[sort_index])
-        return sorted
 
     def _concat_all_budget_pop(self, exclude_budget=None):
         """ Concatenates all subpopulations
@@ -152,9 +140,8 @@ class MODEHB(DEHB):
         to the number of brackets <= max_SH_iter.
         """
         lower_budget_fitness = np.array(self.de[low_budget].fitness)
-        evaluated_configs = np.where([(lower_budget_fitness[:, 0] < self.ref_point[0] - self.initial_fitness_threshold)
-                                      & (lower_budget_fitness[:, 1] < self.ref_point[
-            1] - self.initial_fitness_threshold)])
+        evaluated_configs = np.where([(lower_budget_fitness[:, 0] < np.inf) & (lower_budget_fitness[:, 1] < np.inf)])[1]
+
         # np.where(self.de[low_budget].fitness != [np.inf,np.inf,np.inf])
         promotion_candidate_pop = [self.de[low_budget].population[config] for config in evaluated_configs]
         promotion_candidate_fitness = [self.de[low_budget].fitness[config] for config in evaluated_configs]
@@ -274,7 +261,7 @@ class MODEHB(DEHB):
             if curr_idx not in front_index and parent_idx not in front_index:
                 continue
             if curr_idx in front_index and parent_idx in front_index:
-                idx = multi_obj_util.minHV3D(fitness, self.ref_point)
+                idx = multi_obj_util.minHV3D(fitness)
                 if idx == curr_idx:
                     return
                 budget, parent_id = self._get_info_by_global_parent_id(idx)
@@ -390,9 +377,6 @@ class MODEHB(DEHB):
                 runtime=runtime,
                 history=(config.tolist(), fitness, float(cost), float(budget), info)
             )
-            with open(os.path.join(self.output_path, "hv_contribution_{}.txt"), 'a') as f:
-                ra = [multi_obj_util.computeHV(self.pareto_fit, self.ref_point), cost, self.count_eval]
-                np.savetxt(f, ra)
 
         # remove processed future
         self.futures = np.delete(self.futures, [i for i, _ in done_list]).tolist()

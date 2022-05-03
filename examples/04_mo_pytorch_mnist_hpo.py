@@ -297,7 +297,7 @@ def main():
     np.random.seed(args.seed)
     modehb = MODEHB(objective_function=objective_function, cs=cs, dimensions=dimensions, min_budget=args.min_budget,
                     max_budget=args.max_budget, eta=args.eta, output_path=args.output_path,
-                    ref_point=[1,8], mo_strategy=args.mo_strategy,
+                    num_objectives=2, mo_strategy=args.mo_strategy,
                     # if client is not None and of type Client, n_workers is ignored
                     # if client is None, a Dask client with n_workers is set up
                     client=client, n_workers=args.n_workers)
