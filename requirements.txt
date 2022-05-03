@@ -3,4 +3,4 @@ loguru>=0.5.3
 dask>=2.27.0
 distributed>=2.27.0
 ConfigSpace>=0.4.16
-pygmo==2.18.0
+pygmo==2.16.0
