@@ -105,7 +105,7 @@ represents the *mutation* strategy while `bin` represents the *binomial crossove
 * *crossover_prob*: (default=0.5) A probability within [0, 1] weighing the traits from a parent or the mutant
 
 ### Running MO-DEHB to optimize multiple objectives
-To run multi-objective optimization we require 2 extra parameters: num_objectives: Total number of objectives to minimize
+To run multi-objective optimization we require 2 extra parameters: num_objectives: Total number of objectives to minimize and
 mo_strategy: we provide MO-optimization using Non-dominated sorted(NDS) with crowding distance(NSGA-II) and NDS with eps-net(EPSNET). 
 Below example can help you to get started
 * [04 - A generic template to use MODEHB for multi-objectives Hyperparameter Optimization](examples/04_mo_pytorch_mnist_hpo.py)
