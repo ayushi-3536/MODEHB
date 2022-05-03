@@ -1,7 +1,7 @@
 """
 This script runs a Multi-Objective Hyperparameter Optimisation using MODEHB to tune the architecture and
 training hyperparameters for training a neural network on MNIST in PyTorch. It minimizes two objectives: loss and model size
-
+This example is an extension of single objective problem:'03_pytorch_mnist_hpo.py' to multi-objective setting
 Additional requirements:
 * torch>=1.7.1
 * torchvision>=0.8.2
@@ -313,20 +313,10 @@ def main():
     modehb.logger.info("Saving optimisation trace history...")
     with open(os.path.join(args.output_path, "history_{}.pkl".format(name)), "wb") as f:
         pickle.dump(history, f)
+    modehb.logger.info("pareto population:{}",pareto_pop)
+    modehb.logger.info("pareto fitness:{}",pareto_fit)
+    modehb.logger.debug("runtime:{}",runtime)
 
-    # Retrain and evaluate best found configuration
-    if args.refit_training:
-        modehb.logger.info("Retraining on complete training data to compute test metrics...")
-        train_set = torchvision.datasets.MNIST(
-            root='./data', train=True, download=True, transform=transform
-        )
-        pareto = modehb.vector_to_configspace(modehb.pareto_pop)
-        modehb.logger.info("pareto candidates:{}", pareto_pop)
-        pareto_fit = []
-        for candidates in pareto:
-            pareto_fit.append(train_and_evaluate(candidates, args.max_budget, verbose=True,
-                                                 train_set=train_set, test_set=test_set, device=device))
-        modehb.logger.info("pareto candidates:{}", pareto_fit)
 
 
 if __name__ == "__main__":
