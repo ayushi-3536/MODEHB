@@ -7,8 +7,8 @@ import numpy as np
 from distributed import Client
 from loguru import logger
 
-from dehb import AsyncDE
-from dehb import DEHB
+from dehb.optimizers import AsyncDE
+from dehb.optimizers import DEHB
 from dehb.utils import multi_obj_util
 
 logger.configure(handlers=[{"sink": sys.stdout, "level": "DEBUG"}])

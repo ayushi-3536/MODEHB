@@ -220,9 +220,9 @@ def input_arguments():
                         help='random seed (default: 123)')
     parser.add_argument('--refit_training', action='store_true', default=False,
                         help='Refit with incumbent configuration on full training data and budget')
-    parser.add_argument('--min_budget', type=float, default=None,
+    parser.add_argument('--min_budget', type=float, default=1,
                         help='Minimum budget (epoch length)')
-    parser.add_argument('--max_budget', type=float, default=None,
+    parser.add_argument('--max_budget', type=float, default=25,
                         help='Maximum budget (epoch length)')
     parser.add_argument('--eta', type=int, default=3,
                         help='Parameter for Hyperband controlling early stopping aggressiveness')

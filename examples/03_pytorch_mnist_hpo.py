@@ -40,7 +40,7 @@ from torchsummary import summary
 import ConfigSpace as CS
 import ConfigSpace.hyperparameters as CSH
 
-from ..dehb import DEHB
+from dehb import DEHB
 
 
 class Model(nn.Module):
