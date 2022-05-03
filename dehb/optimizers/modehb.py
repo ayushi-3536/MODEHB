@@ -51,7 +51,7 @@ class MODEHB(DEHB):
         self.mo_strategy = mo_strategy
         self.count_eval = 0
         self.log_interval = log_interval
-        self.num_objectives = num_objectives
+        self.num_objective = num_objectives
 
     def _init_subpop(self):
         """ List of DE objects corresponding to the budgets (fidelities)
