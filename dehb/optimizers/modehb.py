@@ -254,17 +254,34 @@ class MODEHB(DEHB):
         logger.debug("parent idx:{}", parent_idx)
         fitness = np.array([np.array(x) for x in fit])
         index_list = np.array(list(range(len(fit))))
-        fronts, _, index_return_list = multi_obj_util.nDS_index(np.array(fitness), index_list)
+        fronts, _, index_return_list = nDS_index(np.array(fitness), index_list)
+        logger.debug("fronts:{}",fronts)
+        logger.debug("index return list:{}",index_return_list)
 
         for idx, front_index in enumerate(index_return_list):
             front_index = front_index
             if curr_idx not in front_index and parent_idx not in front_index:
                 continue
             if curr_idx in front_index and parent_idx in front_index:
-                idx = multi_obj_util.minHV3D(fitness)
+                logger.debug("fitness:{}", fitness)
+                #Removing unevaluated configs
+                evaluated_configs_fitness = [item.tolist() for item in fitness if np.inf not in item]
+                logger.debug("evaluated config fitness:{}", evaluated_configs_fitness)
+                eval_index_list = np.array(list(range(len(evaluated_configs_fitness))))
+                eval_fronts, _, eval_index_return_list = nDS_index(np.array(evaluated_configs_fitness), eval_index_list)
+                logger.debug("eval fronts:{}",eval_fronts)
+                logger.debug("eval_index_list:{}",eval_index_return_list)
+                idx = minHV3D(eval_fronts[-1])
+                logger.debug("idx of lowest hv in last front:{}", idx)
+                lowest_hv_fitness = eval_fronts[-1][idx]
+                logger.debug("lowest hv fitness:{}", lowest_hv_fitness)
+                idx = np.where(np.all(fitness == lowest_hv_fitness, axis=1))[0][0]
+                #idx = fitness.tolist().index(lowest_hv_fitness)
+                logger.debug("index returned:{}", idx)
                 if idx == curr_idx:
                     return
                 budget, parent_id = self._get_info_by_global_parent_id(idx)
+                logger.debug("parent id :{},budgte:{}",parent_id,budget)
                 self.de[budget].population[parent_id] = config
                 self.de[budget].fitness[parent_id] = np.array(current_fitness)
                 return
