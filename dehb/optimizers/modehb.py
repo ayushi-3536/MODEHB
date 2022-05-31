@@ -244,7 +244,7 @@ class MODEHB(DEHB):
     # ''' This function checks the fitness of parent and evaluated config and replace parent only
     # if its fitness(evaluated by NDS and hypervolume) is greater than the parent, if both lies on the same front,
     # replace least hv contributor'''
-    #
+
     def check_fitness(self, current_fitness, global_parent_id, parent_id, budget, config):
         pop, fit = self._concat_all_budget_pop()
         fit.extend([current_fitness])
