@@ -13,7 +13,7 @@ from dehb.utils import multi_obj_util
 
 logger.configure(handlers=[{"sink": sys.stdout, "level": "DEBUG"}])
 _logger_props = {
-    "format": "{time} {level} {message}",
+    "format": "{time:YYYY-MM-DD HH:mm:ss.SSS} {level} {message}",
     "enqueue": True,
     "rotation": "500 MB"
 }
@@ -254,9 +254,9 @@ class MODEHB(DEHB):
         logger.debug("parent idx:{}", parent_idx)
         fitness = np.array([np.array(x) for x in fit])
         index_list = np.array(list(range(len(fit))))
-        fronts, _, index_return_list = nDS_index(np.array(fitness), index_list)
-        logger.debug("fronts:{}",fronts)
-        logger.debug("index return list:{}",index_return_list)
+        fronts, _, index_return_list = multi_obj_util.nDS_index(np.array(fitness), index_list)
+        logger.debug("fronts:{}", fronts)
+        logger.debug("index return list:{}", index_return_list)
 
         for idx, front_index in enumerate(index_return_list):
             front_index = front_index
@@ -264,24 +264,25 @@ class MODEHB(DEHB):
                 continue
             if curr_idx in front_index and parent_idx in front_index:
                 logger.debug("fitness:{}", fitness)
-                #Removing unevaluated configs
+                # Removing unevaluated configs
                 evaluated_configs_fitness = [item.tolist() for item in fitness if np.inf not in item]
                 logger.debug("evaluated config fitness:{}", evaluated_configs_fitness)
                 eval_index_list = np.array(list(range(len(evaluated_configs_fitness))))
-                eval_fronts, _, eval_index_return_list = nDS_index(np.array(evaluated_configs_fitness), eval_index_list)
-                logger.debug("eval fronts:{}",eval_fronts)
-                logger.debug("eval_index_list:{}",eval_index_return_list)
-                idx = minHV3D(eval_fronts[-1])
+                eval_fronts, _, eval_index_return_list = multi_obj_util.nDS_index(np.array(evaluated_configs_fitness),
+                                                                                  eval_index_list)
+                logger.debug("eval fronts:{}", eval_fronts)
+                logger.debug("eval_index_list:{}", eval_index_return_list)
+                idx = multi_obj_util.minHV3D(eval_fronts[-1])
                 logger.debug("idx of lowest hv in last front:{}", idx)
                 lowest_hv_fitness = eval_fronts[-1][idx]
                 logger.debug("lowest hv fitness:{}", lowest_hv_fitness)
                 idx = np.where(np.all(fitness == lowest_hv_fitness, axis=1))[0][0]
-                #idx = fitness.tolist().index(lowest_hv_fitness)
+                # idx = fitness.tolist().index(lowest_hv_fitness)
                 logger.debug("index returned:{}", idx)
                 if idx == curr_idx:
                     return
                 budget, parent_id = self._get_info_by_global_parent_id(idx)
-                logger.debug("parent id :{},budgte:{}",parent_id,budget)
+                logger.debug("parent id :{},budgte:{}", parent_id, budget)
                 self.de[budget].population[parent_id] = config
                 self.de[budget].fitness[parent_id] = np.array(current_fitness)
                 return
@@ -372,6 +373,7 @@ class MODEHB(DEHB):
             # update bracket information
             logger.debug("run info is {}", run_info)
             fitness, cost = run_info["fitness"], run_info["cost"]
+            self.cumulated_costs += cost
             info = run_info["info"] if "info" in run_info else dict()
             budget, parent_id = run_info["budget"], run_info["parent_id"]
             config = run_info["config"]
@@ -381,7 +383,6 @@ class MODEHB(DEHB):
                 if bracket.bracket_id == bracket_id:
                     # bracket job complete
                     bracket.complete_job(budget)  # IMPORTANT to perform synchronous SH
-
             self.check_fitness(fitness, global_parent_id, parent_id, budget, config)
             self._update_pareto()
 
@@ -431,7 +432,7 @@ class MODEHB(DEHB):
 
     @logger.catch
     def run(self, total_cost=None, fevals=None, brackets=None, single_node_with_gpus=False,
-            verbose=True, debug=False, save_intermediate=True, save_history=True, **kwargs):
+            verbose=True, debug=False, save_intermediate=True, save_history=True, total_wallclock_cost=None, **kwargs):
         """ Main interface to run optimization by DEHB
 
         This function waits on workers and if a worker is free, asks for a configuration and a
@@ -443,9 +444,9 @@ class MODEHB(DEHB):
         than one are specified, DEHB selects only one in the priority order (high to low):
         1) Number of function evaluations (fevals)
         2) Number of Successive Halving brackets run under Hyperband (brackets)
-        3) Total computational cost (in seconds) aggregated by all function evaluations (total_cost)
+        3) Total computational cost (in seconds) aggregated by all function evaluations (total_wallclock_cost)
+        4) Total computational cost (in seconds) returned by the objective function. Might be simulated costs. (total_cost)
         """
-
         self._init_subpop()
         try:
             # checks if a Dask client exists
@@ -470,7 +471,7 @@ class MODEHB(DEHB):
             if debug:
                 logger.configure(handlers=[{"sink": sys.stdout}])
             while True:
-                if self._is_run_budget_exhausted(fevals, brackets, total_cost):
+                if self._is_run_budget_exhausted(fevals, brackets, total_cost, total_wallclock_cost):
                     break
                 if self.is_worker_available():
                     job_info = self._get_next_job()
@@ -492,7 +493,7 @@ class MODEHB(DEHB):
                         self.submit_job(job_info, **kwargs)
                         if verbose:
                             budget = job_info['budget']
-                            self._verbosity_runtime(fevals, brackets, total_cost)
+                            self._verbosity_runtime(fevals, brackets, total_cost, total_wallclock_cost=None,)
                             self.logger.debug(
                                 "Evaluating a configuration with budget {} under "
                                 "bracket ID {}".format(budget, job_info['bracket_id'])
@@ -518,10 +519,10 @@ class MODEHB(DEHB):
                     self._save_history()
                 time.sleep(0.05)  # waiting 50ms
             self.save_results()
-            return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
+            return np.array(self.runtime), np.array(self.history, dtype=object)
 
         except(KeyboardInterrupt, Exception) as err:
             logger.error("exception caught:{}", err)
             self.save_results()
             traceback.print_exc()
-            return np.array(self.runtime), np.array(self.history, dtype=object), self.pareto_pop, self.pareto_fit
+            return np.array(self.runtime), np.array(self.history, dtype=object)

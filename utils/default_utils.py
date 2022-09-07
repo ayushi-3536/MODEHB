@@ -1,5 +1,4 @@
 import os
-import argparse
 
 def create_output_dir(args):
     # Directory where files will be written

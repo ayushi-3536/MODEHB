@@ -301,7 +301,7 @@ def main():
                     # if client is not None and of type Client, n_workers is ignored
                     # if client is None, a Dask client with n_workers is set up
                     client=client, n_workers=args.n_workers)
-    runtime, history, pareto_pop, pareto_fit = modehb.run(total_cost=args.runtime, verbose=args.verbose,
+    runtime, history = modehb.run(total_cost=args.runtime, verbose=args.verbose,
                                                           # arguments below are part of **kwargs shared across workers
                                                           train_set=train_set, valid_set=valid_set, test_set=test_set,
                                                           single_node_with_gpus=single_node_with_gpus, device=device)
@@ -313,10 +313,9 @@ def main():
     modehb.logger.info("Saving optimisation trace history...")
     with open(os.path.join(args.output_path, "history_{}.pkl".format(name)), "wb") as f:
         pickle.dump(history, f)
-    modehb.logger.info("pareto population:{}",pareto_pop)
-    modehb.logger.info("pareto fitness:{}",pareto_fit)
-    modehb.logger.debug("runtime:{}",runtime)
-
+    modehb.logger.info("pareto population:{}", modehb.pareto_pop)
+    modehb.logger.info("pareto fitness:{}", modehb.pareto_fit)
+    modehb.logger.debug("runtime:{}", runtime)
 
 
 if __name__ == "__main__":
