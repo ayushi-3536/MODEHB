@@ -159,7 +159,7 @@ class DEBase():
                 ranges = np.arange(start=0, stop=1, step=1/len(hyper.sequence))
                 param_value = hyper.sequence[np.where((vector[i] < ranges) == False)[0][-1]]
             elif type(hyper) == ConfigSpace.Constant:
-                vector[i] = hyper.value
+                param_value = hyper.value
             elif type(hyper) == ConfigSpace.CategoricalHyperparameter:
                 ranges = np.arange(start=0, stop=1, step=1/len(hyper.choices))
                 param_value = hyper.choices[np.where((vector[i] < ranges) == False)[0][-1]]

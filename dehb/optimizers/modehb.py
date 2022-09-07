@@ -125,13 +125,13 @@ class MODEHB(DEHB):
         self.pareto_fit = fit[is_pareto, :]
         self.pareto_pop = pop[is_pareto, :]
 
-        if (self.count_eval % self.log_interval == 0):
-            with open(os.path.join(self.output_path, "pareto_fit_{}.txt".format(time.time())), 'w') as f:
-                np.savetxt(f, self.pareto_fit)
-        if (self.count_eval % self.log_interval == 0):
-            with open(os.path.join(self.output_path, "pareto_pop_{}.txt".format(time.time())), 'w') as f:
-                for item in self.pareto_pop:
-                    f.write(str(item))
+        #if (self.count_eval % self.log_interval == 0):
+        #    with open(os.path.join(self.output_path, "pareto_fit_{}.txt".format(time.time())), 'w') as f:
+        #        np.savetxt(f, self.pareto_fit)
+        #if (self.count_eval % self.log_interval == 0):
+        #    with open(os.path.join(self.output_path, "pareto_pop_{}.txt".format(time.time())), 'w') as f:
+        #        for item in self.pareto_pop:
+        #            f.write(str(item))
 
     def _get_promotion_candidate(self, low_budget, high_budget, n_configs):
         """ Manages the population to be promoted from the lower to the higher budget.
