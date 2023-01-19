@@ -44,7 +44,7 @@ class MODEHB(DEHB):
                          crossover_prob=crossover_prob, strategy=mutation_strategy, min_budget=min_budget,
                          max_budget=max_budget, eta=eta, min_clip=min_clip, max_clip=max_clip,
                          configspace=configspace, boundary_fix_type=boundary_fix_type, n_workers=n_workers,
-                         max_age=max_age, **kwargs)
+                         max_age=max_age, output_path=output_path, **kwargs)
         self.pareto_pop = []
         self.pareto_fit = []
         self.output_path = output_path
@@ -143,9 +143,9 @@ class MODEHB(DEHB):
 
         # ordering the evaluated individuals based on their fitness values
         if self.mo_strategy == 'NSGA-II':
-            pop_idx = self._select_best_config_mo_cd(population_fitness=promotion_candidate_fitness)
+            pop_idx = self._select_best_config_mo_cd(population_fitness=normalized_fitness)
         else:
-            pop_idx = self._select_best_config_epsnet(population_fitness=promotion_candidate_fitness)
+            pop_idx = self._select_best_config_epsnet(population_fitness=normalized_fitness)
 
         # creating population for promotion if none promoted yet or nothing to promote
         if self.de[high_budget].promotion_pop is None or \
@@ -253,12 +253,9 @@ class MODEHB(DEHB):
         pop.extend([config])
         curr_idx = len(fit) - 1
         parent_idx = global_parent_id
-        logger.debug("parent idx:{}", parent_idx)
         fitness = np.array([np.array(x) for x in fit])
         index_list = np.array(list(range(len(fit))))
         fronts, _, index_return_list = multi_obj_util.nDS_index(np.array(fitness), index_list)
-        logger.debug("fronts:{}", fronts)
-        logger.debug("index return list:{}", index_return_list)
 
         for idx, front_index in enumerate(index_return_list):
             front_index = front_index
@@ -268,17 +265,13 @@ class MODEHB(DEHB):
                 logger.debug("fitness:{}", fitness)
                 # Removing unevaluated configs
                 evaluated_configs_fitness = [item.tolist() for item in fitness if np.inf not in item]
-                logger.debug("evaluated config fitness:{}", evaluated_configs_fitness)
                 eval_index_list = np.array(list(range(len(evaluated_configs_fitness))))
                 eval_fronts, _, eval_index_return_list = multi_obj_util.nDS_index(np.array(evaluated_configs_fitness),
-                                                                                  eval_index_list,
-                                                                                  return_front_indices=True)
+                                                                                  eval_index_list)
 
                 idx = multi_obj_util.minHV3D(eval_fronts[-1])
                 lowest_hv_fitness = eval_fronts[-1][idx]
                 idx = np.where(np.all(fitness == lowest_hv_fitness, axis=1))[0][0]
-                # idx = fitness.tolist().index(lowest_hv_fitness)
-                logger.debug("index returned:{}", idx)
                 if idx == curr_idx:
                     return
                 budget, parent_id = self._get_info_by_global_parent_id(idx)
