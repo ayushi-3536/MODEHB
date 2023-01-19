@@ -158,6 +158,8 @@ class DEBase():
             if type(hyper) == ConfigSpace.OrdinalHyperparameter:
                 ranges = np.arange(start=0, stop=1, step=1/len(hyper.sequence))
                 param_value = hyper.sequence[np.where((vector[i] < ranges) == False)[0][-1]]
+            elif type(hyper) == ConfigSpace.Constant:
+                param_value = hyper.value
             elif type(hyper) == ConfigSpace.CategoricalHyperparameter:
                 ranges = np.arange(start=0, stop=1, step=1/len(hyper.choices))
                 param_value = hyper.choices[np.where((vector[i] < ranges) == False)[0][-1]]
@@ -197,6 +199,10 @@ class DEBase():
             if type(hyper) == ConfigSpace.OrdinalHyperparameter:
                 nlevels = len(hyper.sequence)
                 vector[i] = hyper.sequence.index(config[name]) / nlevels
+            #TODO: see if there is a better strategy
+            #currently following a very simple idea that rand1 mutation and crossover won't impact this parameter if the value is 0
+            elif type(hyper) == ConfigSpace.Constant:
+                vector[i] = 0
             elif type(hyper) == ConfigSpace.CategoricalHyperparameter:
                 nlevels = len(hyper.choices)
                 vector[i] = hyper.choices.index(config[name]) / nlevels

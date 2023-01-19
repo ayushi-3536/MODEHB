@@ -27,7 +27,7 @@ class MODEHB(DEHB):
                  mutation_factor=0.5,
                  crossover_prob=0.5,
                  mutation_strategy='rand1_bin',
-                 mo_strategy='EPSNET',
+                 mo_strategy='NSGA-II',
                  min_budget=None,
                  max_budget=None,
                  eta=3,
