@@ -8,7 +8,6 @@ pip install -r requirements.txt
 
 ### Pygmo
 If you are using `python >=3.9`, you have to install pygmo with `conda`, because it is currently not on pypi. 
-```bash 
 ```
 conda config --add channels conda-forge
 conda config --set channel_priority strict
